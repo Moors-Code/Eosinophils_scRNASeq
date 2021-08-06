@@ -28,11 +28,11 @@ eosinophils_steadystate <- subset(eosinophils_steadystate,  idents = c(0,1,2,3))
 
 #rename clusters
 current.cluster.ids <- c(0, 1, 2, 3, 4,5,6)
-new.cluster.ids <-  c("basal eosinophils", "intestinal eosinophils",  "circulating eosinophils", "immature eosinophils", "basal eosinophils",
+new.cluster.ids <-  c("basal eosinophils", "active eosinophils",  "circulating eosinophils", "immature eosinophils", "basal eosinophils",
                       "eosinophil progenitors", "basal eosinophils")
 eosinophils_steadystate@meta.data$seurat_clusters <- plyr::mapvalues(x = eosinophils_steadystate@meta.data$seurat_clusters, from = current.cluster.ids, to = new.cluster.ids)
 Idents(eosinophils_steadystate) <- "seurat_clusters"
-eosinophils_steadystate$seurat_clusters <- factor(x = eosinophils_steadystate$seurat_clusters, levels = rev(c("intestinal eosinophils","basal eosinophils", "circulating eosinophils","immature eosinophils",  "eosinophil progenitors")))
+eosinophils_steadystate$seurat_clusters <- factor(x = eosinophils_steadystate$seurat_clusters, levels = rev(c("active eosinophils","basal eosinophils", "circulating eosinophils","immature eosinophils",  "eosinophil progenitors")))
 DimPlot(eosinophils_steadystate, reduction = "umap", pt.size = .5, label=F, cols = col_vector[1:5]) + 
   ggsave("Figures/UMAP.pdf", width = 8, height = 5)
 
@@ -65,7 +65,7 @@ c5 <- (b[1:6,6]/totalcellsperorgan)*100
 
 c <- rbind(c0,c1,c2,c3,c4)
 colSums(c)
-rownames(c) =  rev(c("intestinal eosinophils", "basal eosinophils", "circulating eosinophils", "immature eosinophils", "eosinophil progenitors"))
+rownames(c) =  rev(c("active eosinophils", "basal eosinophils", "circulating eosinophils", "immature eosinophils", "eosinophil progenitors"))
 c
 
 #plot
@@ -131,7 +131,7 @@ final.markers <- c("Mki67", "Tuba1b", "Epx", "Prg3", "Prg2","Ear1","Ear2", "Ear6
                    "Cd24a", "Mmp9", "Icosl", "Il4", "Tgfb1", "Pirb", "Rara", "Cd80", "Cd274", "Ptgs2", "Il1rn", "Il1b", 
                    "Vegfa", "Ccl3", "Cxcl2", "Il16", "Tnf")
 
-eosinophils_steadystate$seurat_clusters <- factor(x = eosinophils_steadystate$seurat_clusters, levels = c("intestinal eosinophils","basal eosinophils", "circulating eosinophils","immature eosinophils",  "eosinophil progenitors"))
+eosinophils_steadystate$seurat_clusters <- factor(x = eosinophils_steadystate$seurat_clusters, levels = c("active eosinophils","basal eosinophils", "circulating eosinophils","immature eosinophils",  "eosinophil progenitors"))
 Idents(eosinophils_steadystate) <- "seurat_clusters"
 DotPlot(eosinophils_steadystate, features = final.markers , dot.scale = 10) + RotatedAxis() +
   theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
@@ -147,7 +147,7 @@ DoHeatmap(eosinophils_steadystate, features = c("Mki67", "Cdk1", "Pcna", "Cdt1",
           lines.width = 100, group.colors	= rev(col_vector[1:5]))+  scale_fill_gradientn(colors = pal,  na.value = "white") + theme(axis.text.y = element_text(face = "italic", color="black") ) +
   ggsave("progenitors_heatmap.pdf", width = 7, height = 2.8)
 
-eosinophils_steadystate$seurat_clusters <- factor(x = eosinophils_steadystate$seurat_clusters, levels = c("intestinal eosinophils","basal eosinophils", "circulating eosinophils","immature eosinophils",  "eosinophil progenitors"))
+eosinophils_steadystate$seurat_clusters <- factor(x = eosinophils_steadystate$seurat_clusters, levels = c("active eosinophils","basal eosinophils", "circulating eosinophils","immature eosinophils",  "eosinophil progenitors"))
 
 tmp <- CellCycleScoring(
   object = eosinophils_steadystate,
@@ -203,11 +203,11 @@ VlnPlot(eosinophils_steadystate, features="GranulesSynthesis1", group.by = "seur
 #test
 eos_circ <- subset(eosinophils_steadystate, idents = c("circulating eosinophils"))
 eos_basal <- subset(eosinophils_steadystate, idents = c("basal eosinophils"))
-eos_intestinal <- subset(eosinophils_steadystate, idents = c("intestinal eosinophils"))
+eos_active <- subset(eosinophils_steadystate, idents = c("active eosinophils"))
 wilcox.test(eos_prog$GranulesSynthesis1, eos_immature$GranulesSynthesis1, alternative = "two.sided") #p-value < 2.2e-16
 wilcox.test(eos_prog$GranulesSynthesis1, eos_circ$GranulesSynthesis1, alternative = "two.sided") #p-value < 2.2e-16
 wilcox.test(eos_prog$GranulesSynthesis1, eos_basal$GranulesSynthesis1, alternative = "two.sided") #p-value < 2.2e-16
-wilcox.test(eos_prog$GranulesSynthesis1, eos_intestinal$GranulesSynthesis1, alternative = "two.sided") #p-value < 2.2e-16
+wilcox.test(eos_prog$GranulesSynthesis1, eos_active$GranulesSynthesis1, alternative = "two.sided") #p-value < 2.2e-16
 
            
 #FGSEA#####
@@ -232,11 +232,11 @@ BP_basal <- preranked_BP(basal_markers)
 View(BP_basal%>% filter(pval<0.05))
 sig_BP_basal <- BP_basal %>% filter(abs(NES)>1 & padj<0.05)
 
-intestinal_markers <- FindMarkers(object = eosinophils_steadystate, ident.1="intestinal eosinophils", only.pos = F, min.pct = 0.25, logfc.threshold = 0.25)
-intestinal_markers$p_val_adj[intestinal_markers$p_val_adj == 0] <- 2.225074e-308 #replace 0 with lowest number
-BP_intestinal <- preranked_BP(intestinal_markers)
-View(BP_intestinal %>% filter(padj<0.05))
-sig_BP_intestinal <- BP_intestinal %>% filter(abs(NES)>1 & padj<0.05)
+active_markers <- FindMarkers(object = eosinophils_steadystate, ident.1="active eosinophils", only.pos = F, min.pct = 0.25, logfc.threshold = 0.25)
+active_markers$p_val_adj[active_markers$p_val_adj == 0] <- 2.225074e-308 #replace 0 with lowest number
+BP_active <- preranked_BP(active_markers)
+View(BP_active %>% filter(padj<0.05))
+sig_BP_active <- BP_active %>% filter(abs(NES)>1 & padj<0.05)
 
 
 circulating_markers <- FindMarkers(object = eosinophils_steadystate, ident.1="circulating eosinophils", only.pos = F, min.pct = 0.25, logfc.threshold = 0.25)
@@ -283,23 +283,23 @@ pos_basal<- which(BP_basal$pathway ==  "NEGATIVE REGULATION OF LYMPHOCYTE ACTIVA
                     BP_basal$pathway ==  "INFLAMMATORY RESPONSE")
 
 
-pos_intestinal <- which(BP_intestinal$pathway ==   "RESPONSE TO LIPID"|
-                     BP_intestinal$pathway == "RESPONSE TO MOLECULE OF BACTERIAL ORIGIN" |
-                     BP_intestinal$pathway == "INFLAMMATORY RESPONSE"|
-                     BP_intestinal$pathway == "MYELOID LEUKOCYTE MIGRATION"|
-                     BP_intestinal$pathway == "RESPONSE TO MOLECULE OF BACTERIAL ORIGIN"|
-                     BP_intestinal$pathway == "RESPONSE TO CYTOKINE"|
-                     BP_intestinal$pathway == "RESPONSE TO TUMOR NECROSIS FACTOR"|
-                     BP_intestinal$pathway == "LEUKOCYTE CHEMOTAXIS"|
-                     BP_intestinal$pathway == "GRANULOCYTE CHEMOTAXIS"|
-                     BP_intestinal$pathway == "PROTEIN LOCALIZATION TO ENDOPLASMIC RETICULUM"|
-                     BP_intestinal$pathway =="POSITIVE REGULATION OF REACTIVE OXYGEN SPECIES METABOLIC PROCESS"|
-                     BP_intestinal$pathway =="REGULATION OF WOUND HEALING"|
-                     BP_intestinal$pathway =="REGULATION OF ADAPTIVE IMMUNE RESPONSE"|
-                     BP_intestinal$pathway =="RESPONSE TO INTERLEUKIN 1"|
-                     BP_intestinal$pathway =="P38MAPK CASCADE"|
-                     BP_intestinal$pathway =="NIK NF KAPPAB SIGNALING"|
-                     BP_intestinal$pathway =="REGULATION OF CELL MATRIX ADHESION")
+pos_actuve <- which(BP_active$pathway ==   "RESPONSE TO LIPID"|
+                     BP_active$pathway == "RESPONSE TO MOLECULE OF BACTERIAL ORIGIN" |
+                     BP_active$pathway == "INFLAMMATORY RESPONSE"|
+                     BP_active$pathway == "MYELOID LEUKOCYTE MIGRATION"|
+                     BP_active$pathway == "RESPONSE TO MOLECULE OF BACTERIAL ORIGIN"|
+                     BP_active$pathway == "RESPONSE TO CYTOKINE"|
+                     BP_active$pathway == "RESPONSE TO TUMOR NECROSIS FACTOR"|
+                     BP_active$pathway == "LEUKOCYTE CHEMOTAXIS"|
+                     BP_active$pathway == "GRANULOCYTE CHEMOTAXIS"|
+                     BP_active$pathway == "PROTEIN LOCALIZATION TO ENDOPLASMIC RETICULUM"|
+                     BP_active$pathway =="POSITIVE REGULATION OF REACTIVE OXYGEN SPECIES METABOLIC PROCESS"|
+                     BP_active$pathway =="REGULATION OF WOUND HEALING"|
+                     BP_active$pathway =="REGULATION OF ADAPTIVE IMMUNE RESPONSE"|
+                     BP_active$pathway =="RESPONSE TO INTERLEUKIN 1"|
+                     BP_active$pathway =="P38MAPK CASCADE"|
+                     BP_active$pathway =="NIK NF KAPPAB SIGNALING"|
+                     BP_active$pathway =="REGULATION OF CELL MATRIX ADHESION")
 
 pos_circulating <- which(BP_circulating$pathway == "REGULATION OF CELL POPULATION PROLIFERATION" |
                            BP_circulating$pathway == "REACTIVE OXYGEN SPECIES BIOSYNTHETIC PROCESS" |
@@ -317,8 +317,8 @@ merged2 <- merge(merged, BP_circulating[pos_circulating,c(1,5)], by = "pathway" 
                  suffixes = c(".progenitors",".immature"))
 merged3 <- merge(merged2,  BP_basal[pos_basal,c(1,5)], by = "pathway" , all = T, 
                  suffixes = c(".circulating",".basal"))
-merged4 <- merge(merged3, BP_intestinal[pos_intestinal,c(1,5)], by = "pathway" , all = T)
-colnames(merged4) <- c("pathway","progenitors", "immature", "circulating", "basal", "intestinal")
+merged4 <- merge(merged3, BP_active[pos_active,c(1,5)], by = "pathway" , all = T)
+colnames(merged4) <- c("pathway","progenitors", "immature", "circulating", "basal", "active")
 merged4[is.na(merged4)] <- 0
 rownames(merged4) <- merged4$pathway
 rownames(merged4)<- tolower(rownames(merged4))
