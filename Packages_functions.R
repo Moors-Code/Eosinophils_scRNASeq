@@ -1,4 +1,4 @@
-#PACKAGES AND FUNCTIONS
+######PACKAGES######
 library(devtools)
 library(Seurat)
 library(BiocManager)
@@ -38,8 +38,8 @@ library(viridis)
 library(wesanderson)
 
 
-
-# import function
+####FUNCTIONS#####
+# import function .st data to sparse matrix
 data_to_sparse_matrix <- function(data.st_file_path) {
   # read in file with cell index - gene name - values
   # import for one cartridge, one sample
@@ -55,7 +55,7 @@ data_to_sparse_matrix <- function(data.st_file_path) {
   return(sparse_mat)
 }
 
-
+#volcano plot
 DEGs_volcano <- function(DEGs, p_treshold, FC_treshold, title, color, upperylim, xlim) {
   DEGs$Significant <- ifelse((DEGs$p_val_adj < p_treshold & abs(DEGs$avg_log2FC) > FC_treshold ), "Significant", "Not Sig")
   DEGs$Gene <- ifelse((DEGs$p_val_adj < p_treshold & abs(DEGs$avg_log2FC) > FC_treshold ), rownames(DEGs), NA)
@@ -77,28 +77,15 @@ DEGs_volcano <- function(DEGs, p_treshold, FC_treshold, title, color, upperylim,
   return(plot)
 }
 
+####FGSEA####
 
+#import dataset
+msigdbr_species()
+m_df<- msigdbr(species = "Mus musculus", category = "C5", subcategory = "BP")
+BP <- m_df %>% split(x = .$gene_symbol, f = .$gs_name)
+head(BP)
 
-DEGs_plot <- function(DEGs, p_treshold, FC_treshold, title, color) {
-  DEGs$Significant <- ifelse((DEGs$p_val_adj < p_treshold & abs(DEGs$avg_log2FC) > FC_treshold ), "Significant", "Not Sig")
-  DEGs$Gene <- ifelse((DEGs$p_val_adj < p_treshold & abs(DEGs$avg_log2FC) > FC_treshold ), rownames(DEGs), NA)
-  
-  plot <-  ggplot(data=DEGs, aes(y=avg_log2FC,x=1, fill=factor(Significant), label = DEGs$Gene) ) + 
-    theme_classic()+ 
-    geom_point(shape = 21,color="black")+
-    scale_fill_manual(values = c("black", color)) +
-    geom_text_repel(size=3, max.overlaps = 100)+
-    xlab("log2 fold change") +
-    ylab("-log10 adjusted p-value") +  labs(title = title)+
-    theme(legend.position = "none", text = element_text(size=12),
-          plot.title = element_text(size = rel(1.5), hjust = 0.5),
-          axis.title = element_text(size = rel(1.25)))
-  return(plot)
-}
-
-
-
-
+#rank genes and calculate BP enrichment
 preranked_BP <- function(x) {
   ranks <- x %>% 
     na.omit()%>%
@@ -117,63 +104,6 @@ preranked_BP <- function(x) {
   BP_x$pathway<-gsub("_"," ",BP_x$pathway)
   return(BP_x)
 }
-
-preranked_REACTOME <- function(x) {
-  ranks <- x %>% 
-    na.omit()%>%
-    mutate(ranking=avg_log2FC)
-  ranks <- ranks$ranking
-  names(ranks) <- rownames(x)
-  head(ranks, 10)
-  
-  REACTOME_x <- fgsea(pathways = REACTOME, 
-                      stats = ranks,
-                      minSize=10,
-                      maxSize=500,
-                      nperm=1000000)
-  
-  REACTOME_x$pathway<-gsub("REACTOME_","",REACTOME_x$pathway)
-  REACTOME_x$pathway<-gsub("_"," ",REACTOME_x$pathway)
-  return(REACTOME_x)
-}
-preranked_Hallmark <- function(x) {
-  ranks <- x %>% 
-    na.omit()%>%
-    mutate(ranking=avg_log2FC)
-  ranks <- ranks$ranking
-  names(ranks) <- rownames(x)
-  head(ranks, 10)
-  
-  Hallmarks_x <- fgsea(pathways = Hallmarks, 
-                       stats = ranks,
-                       minSize=10,
-                       maxSize=500,
-                       nperm=1000000)
-  
-  Hallmarks_x$pathway<-gsub("HALLMARK_","",Hallmarks_x$pathway)
-  Hallmarks_x$pathway<-gsub("_"," ",Hallmarks_x$pathway)
-  return(Hallmarks_x)
-}
-
-GSEA_dotplot <- function(BP_cluster, positions, title) {
-  selected_BP_cluster <- BP_cluster[positions,c("pathway","NES","padj", "size") ]
-  selected_BP_cluster <- arrange(selected_BP_cluster, NES) 
-  selected_BP_cluster$pathway <- factor(selected_BP_cluster$pathway, levels = selected_BP_cluster$pathway)
-  plot <- ggplot(data = selected_BP_cluster , aes(x = NES, y = pathway, size = size, label= pathway))+ 
-    geom_point(aes(color=-log10(selected_BP_cluster$padj)), size=abs(selected_BP_cluster$NES)*5)  +theme_bw()+ 
-    theme(axis.text.y = element_text( size=10, colour = "black"))+ labs(title = title, y = "", x="")+
-    theme(axis.text.x = element_text(face="bold", size=10, colour = "black",hjust=1))+ xlim(-3.5,3.5)+
-    scale_colour_gradientn(colours = pal[3:9]) + theme(legend.position="none")
-  return(plot)
-}
-
-
-
-###IMPORT DATASET: Biological process ####
-msigdbr_species()
-m_df<- msigdbr(species = "Mus musculus", category = "C5", subcategory = "BP")
-BP <- m_df %>% split(x = .$gene_symbol, f = .$gs_name)
-head(BP)
 
 
 ####COLOR PALETTE FOR PLOTS ####
