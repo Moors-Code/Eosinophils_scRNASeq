@@ -138,7 +138,7 @@ DotPlot(eosinophils_steadystate, features = final.markers , dot.scale = 10) + Ro
   scale_colour_gradientn(colours = pal)+ theme(legend.position="right")  + labs(title = "cluster markers", y = "", x="")+
   ggsave("Figures/steadystate_dotplot.pdf", width = 15, height = 3.5)
 
-###PROGENITORS######
+###SIGNATURES######
 #Cell cycle score
 eosinophils_steadystate$seurat_clusters <- factor(x = eosinophils_steadystate$seurat_clusters, levels = c("eosinophil progenitors", "immature eosinophils", "circulating eosinophils", "basal eosinophils", "intestinal eosinophils"))
 DoHeatmap(eosinophils_steadystate, features = c("Mki67", "Cdk1", "Pcna", "Cdt1", "Fbxo5", "Spc24", "Ranbp1", "Rad21", 
@@ -190,7 +190,6 @@ VlnPlot(eosinophils_steadystate, features= "Stemness1", group.by = "seurat_clust
 #test
 wilcox.test(eos_prog$Stemness1, eos_immature$Stemness1, alternative = "two.sided") #p-value < 2.2e-16
 
-####GRANULES AND ANTIMICROBIAL####
 #Granules synthesis
 Granules_synthesis_list <-   list(c("Prg2","Prg3",  "Epx", "Ear6", "Ear1", "Ear2"))
 eosinophils_steadystate <-AddModuleScore(eosinophils_steadystate, features= Granules_synthesis_list,name = "GranulesSynthesis")
@@ -210,76 +209,130 @@ wilcox.test(eos_prog$GranulesSynthesis1, eos_circ$GranulesSynthesis1, alternativ
 wilcox.test(eos_prog$GranulesSynthesis1, eos_basal$GranulesSynthesis1, alternative = "two.sided") #p-value < 2.2e-16
 wilcox.test(eos_prog$GranulesSynthesis1, eos_intestinal$GranulesSynthesis1, alternative = "two.sided") #p-value < 2.2e-16
 
-#antimicrobial synthesis
-Antimicrobial_list <- list(c("S100a8", "S100a9", "Gbp2", "Prg2", "Epx", "Ear1", "Ear2", "Ear6", "Gbp7", "Ltf", 
-                             "Lcn2", "Lyz2", "Irgm1", "Camp", "Adam17", "Serpine1", "H2-D1", "H2-T23", "H2-Q7"))
-eosinophils_steadystate <-AddModuleScore(eosinophils_steadystate, features= Antimicrobial_list,name = "Antimicrobial")
-names(x = eosinophils_steadystate[[]])
+           
+#FGSEA#####
+Idents(eosinophils_steadystate) <- "seurat_clusters"
+DimPlot(eosinophils_steadystate)
 
-VlnPlot(eosinophils_steadystate, features="Antimicrobial1", group.by = "seurat_clusters", rev(col_vector[1:5]), pt.size = 0) +  theme_classic() + 
-  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
-  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+ ylim(-0.5,3.4)+
-  labs(y = "Antimicrobial signature", title = "", x="") + theme(legend.position="right") +  
-  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
-  annotate(geom="text", x=0.5, y=3, label="(S100a8, S100a9, Gbp2, Prg2, Epx, Ear1, \nEar2, Ear6, Gbp7, Ltf, Lcn2, Lyz2, Irgm1, \nCamp, Adam17, Serpin1, H2-D1, \nH2-T23, H2-Q7)", 
-           color="black", size=5,   fontface="italic",  hjust = 0)+
-  ggsave("Figures/Antimicrobial_violin.pdf", width = 8, height = 6)
+prog_markers <- FindMarkers(object = eosinophils_steadystate, ident.1="eosinophil progenitors", only.pos = F, min.pct = 0.25, logfc.threshold = 0.25)
+prog_markers$p_val_adj[prog_markers$p_val_adj == 0] <- 2.225074e-308 #replace 0 with lowest number
+BP_progenitors <- preranked_BP(prog_markers)
+sig_BP_progenitors <- as.data.frame(BP_progenitors %>% filter(padj<0.05))
+View(sig_BP_progenitors)
 
-#ifng regulated antimicrobial signature
-IFNg_regulated <- list(c("Irgm1", "Camp", "Adam17", "Serpine1", "H2-D1", "H2-T23", "H2-Q7"))
-eosinophils_steadystate <-AddModuleScore(eosinophils_steadystate, features= IFNg_regulated,name = "IFNg_regulated")
-names(x = eosinophils_steadystate[[]])
+immature_markers <- FindMarkers(object = eosinophils_steadystate, ident.1="immature eosinophils", only.pos = F, min.pct = 0.25, logfc.threshold = 0.25)
+immature_markers$p_val_adj[immature_markers$p_val_adj == 0] <- 2.225074e-308 #replace 0 with lowest number
+BP_immature <- preranked_BP(immature_markers)
+sig_BP_immature <- BP_immature %>% filter(padj<0.05)
+View(sig_BP_immature)
 
-VlnPlot(eosinophils_steadystate, features="IFNg_regulated1", group.by = "seurat_clusters", rev(col_vector[1:5]), pt.size = 0) +  theme_classic() + 
-  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
-  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+ ylim(-0.5,3.4)+
-  labs(title = "", y = "IFNg-regulated antimicrobial signature", x="") + theme(legend.position="right") +  
-  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
-  annotate(geom="text", x=0.5, y=3, label="(Gbp2, Gbp7, Irgm1, Serpin1, H2-D1, H2-T23, H2-Q7)", 
-           color="black", size=5,   fontface="italic",  hjust = 0)+
-  ggsave("Figures/Ifng_Antimicrobial_violin.pdf", width = 8, height = 6)
+basal_markers <- FindMarkers(object = eosinophils_steadystate, ident.1="basal eosinophils", only.pos = F, min.pct = 0.25, logfc.threshold = 0.25)
+basal_markers$p_val_adj[basal_markers$p_val_adj == 0] <- 2.225074e-308 #replace 0 with lowest number
+BP_basal <- preranked_BP(basal_markers)
+View(BP_basal%>% filter(pval<0.05))
+sig_BP_basal <- BP_basal %>% filter(abs(NES)>1 & padj<0.05)
+
+intestinal_markers <- FindMarkers(object = eosinophils_steadystate, ident.1="intestinal eosinophils", only.pos = F, min.pct = 0.25, logfc.threshold = 0.25)
+intestinal_markers$p_val_adj[intestinal_markers$p_val_adj == 0] <- 2.225074e-308 #replace 0 with lowest number
+BP_intestinal <- preranked_BP(intestinal_markers)
+View(BP_intestinal %>% filter(padj<0.05))
+sig_BP_intestinal <- BP_intestinal %>% filter(abs(NES)>1 & padj<0.05)
 
 
-####BASAL vs. INTESTINAL COMPARISON#####
-basal_intestinal <- subset(eosinophils_steadystate, idents = c("intestinal eosinophils", "basal eosinophils"))
+circulating_markers <- FindMarkers(object = eosinophils_steadystate, ident.1="circulating eosinophils", only.pos = F, min.pct = 0.25, logfc.threshold = 0.25)
+circulating_markers$p_val_adj[circulating_markers$p_val_adj == 0] <- 2.225074e-308 #replace 0 with lowest number
+BP_circulating <- preranked_BP(circulating_markers)
+View(BP_circulating%>% filter( pval<0.05))
+sig_BP_circulating <- BP_circulating %>% filter(abs(NES)>1 & pval<0.05) #ATTENTION PVAL
 
-#receptors
-selected_markers <- c("Ptafr", "Ahr", "Fcgr3", "Fgfr1", "Ccr1", "Cxcr4", "Csf2rb", "Csf2rb2", "Il10ra", "Ifngr1", "Tgfbr2")
-DotPlot(basal_intestinal, features = selected_markers , dot.scale = 15) + RotatedAxis() +
-  theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1, size=20), axis.text.y = element_text(face="bold", size=20)) + 
-  scale_colour_gradientn(colours = pal)+ theme(legend.position="right")  + labs(title = " ", y = "", x="") +
-  ggsave("basalintestinal_dotplot.pdf", width = 7, height = 3.5)
+#plot GSEA as heatmap with enrichment as rows (color=NES) and cluster as columns
+pos_progenitors <- which(BP_progenitors$pathway ==  "CELL DIVISION"| 
+                           BP_progenitors$pathway ==  "CELL CYCLE"| 
+                           BP_progenitors$pathway ==  "DNA REPLICATION"| 
+                           BP_progenitors$pathway == "EXOCYTOSIS" | 
+                           BP_progenitors$pathway ==  "CELL ACTIVATION"| 
+                           BP_progenitors$pathway == "CYTOKINE SECRETION"| 
+                           BP_progenitors$pathway == "CELL ADHESION MEDIATED BY INTEGRIN")
 
-#NFKB transcription factors
-Nfkb.markers <- c("Nfkb1", "Nfkbib", "Nfkbia", "Nfkbie", "Nfkb2", "Nfkbiz", "Rela", "Relb")
-DotPlot(eosinophils_steadystate, features = Nfkb.markers , dot.scale = 10) + RotatedAxis() +
-  theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
-  scale_colour_gradientn(colours = pal)+ theme(legend.position="right")  + labs(title = "cluster markers", y = "", x="") +
-  ggsave("Nfkb_dotplot.pdf", width = 7, height = 2.8)
+pos_immature <- which(BP_immature$pathway ==  "PROTEIN TARGETING TO MEMBRANE" | 
+                        BP_immature$pathway == "EXOCYTOSIS"|
+                        BP_immature$pathway == "PROTEIN LOCALIZATION TO ENDOPLASMIC RETICULUM"|
+                        BP_immature$pathway == "MYELOID LEUKOCYTE ACTIVATION"|
+                        BP_immature$pathway =="SECRETION"|
+                        BP_immature$pathway =="CELL MATURATION")
 
-#VlnPlot(eosinophils_steadystate, features="Nfkb1", group.by = "seurat_clusters", rev(col_vector[1:5]), pt.size = 0) +  theme_classic() + 
-  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
-  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+
-  labs(y = "Nfkb activity score", x="", title=" ") + theme(legend.position="right") +  
-  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
-  ggsave("Figures/Nfkb_activity_violin.pdf", width = 8, height = 4)
+pos_basal<- which(BP_basal$pathway ==  "NEGATIVE REGULATION OF LYMPHOCYTE ACTIVATION"|
+                    BP_basal$pathway ==  "REGULATION OF WOUND HEALING"| 
+                    BP_basal$pathway ==  "PROTEIN LOCALIZATION TO ENDOPLASMIC RETICULUM"|
+                    BP_basal$pathway ==  "CELLULAR EXTRAVASATION"|
+                    BP_basal$pathway ==  "LEUKOCYTE DIFFERENTIATION"|
+                    BP_basal$pathway ==  "CELL ACTIVATION"|
+                    BP_basal$pathway ==  "IMMUNE EFFECTOR PROCESS"|
+                    BP_basal$pathway ==  "RESPONSE TO CYTOKINE"|
+                    BP_basal$pathway ==  "SECRETION"|
+                    BP_basal$pathway ==  "RESPONSE TO MOLECULE OF BACTERIAL ORIGIN"|
+                    BP_basal$pathway ==  "EXOCYTOSIS"|
+                    BP_basal$pathway ==  "LEUKOCYTE MIGRATION"|
+                    BP_basal$pathway ==  "LEUKOCYTE CHEMOTAXIS"|
+                    BP_basal$pathway ==  "GRANULOCYTE CHEMOTAXIS"|
+                    BP_basal$pathway ==  "MYELOID LEUKOCYTE MIGRATION"|
+                    BP_basal$pathway ==  "GRANULOCYTE MIGRATION" |
+                    BP_basal$pathway == "LYMPHOCYTE MEDIATED IMMUNITY" | 
+                    BP_basal$pathway == "NEGATIVE REGULATION OF MAP KINASE ACTIVITY" |
+                    BP_basal$pathway == "GRANULOCYTE CHEMOTAXIS" |
+                    BP_basal$pathway ==  "INFLAMMATORY RESPONSE")
 
-#regulatory proteins
-a<-plot_density(eosinophils_steadystate, "Cd80", pal = "magma")
-b<-plot_density(eosinophils_steadystate, "Cd9", pal = "magma")
-c<-plot_density(eosinophils_steadystate, "Cd274", pal = "magma")
-ggarrange(a, b, c, ncol = 3, nrow = 1) + ggsave("Figures/CostimulatoryMarkers.pdf", width = 15, height = 4)
-  
-Regulatory_list <-  list(c("Icosl", "Cd274", "Cd80", "Cd9"))
-eosinophils_steadystate <-AddModuleScore(eosinophils_steadystate, features= Regulatory_list,name = "Regulatory")
-names(x = eosinophils_steadystate[[]])
-VlnPlot(eosinophils_steadystate, features="Regulatory1", group.by = "seurat_clusters", rev(col_vector[1:5]), pt.size = 0) +  theme_classic() + 
-  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
-  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+
-  labs(title = " ", y = "Immune regulatory score", x="") + theme(legend.position="right") +  
-  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
-  ggsave("Figures/Regulatory_violin.pdf", width = 8, height = 4)
 
-#test
-wilcox.test(eos_intestinal$Regulatory1, eos_basal$Regulatory1, alternative = "two.sided") #p-value < 2.2e-16
+pos_intestinal <- which(BP_intestinal$pathway ==   "RESPONSE TO LIPID"|
+                     BP_intestinal$pathway == "RESPONSE TO MOLECULE OF BACTERIAL ORIGIN" |
+                     BP_intestinal$pathway == "INFLAMMATORY RESPONSE"|
+                     BP_intestinal$pathway == "MYELOID LEUKOCYTE MIGRATION"|
+                     BP_intestinal$pathway == "RESPONSE TO MOLECULE OF BACTERIAL ORIGIN"|
+                     BP_intestinal$pathway == "RESPONSE TO CYTOKINE"|
+                     BP_intestinal$pathway == "RESPONSE TO TUMOR NECROSIS FACTOR"|
+                     BP_intestinal$pathway == "LEUKOCYTE CHEMOTAXIS"|
+                     BP_intestinal$pathway == "GRANULOCYTE CHEMOTAXIS"|
+                     BP_intestinal$pathway == "PROTEIN LOCALIZATION TO ENDOPLASMIC RETICULUM"|
+                     BP_intestinal$pathway =="POSITIVE REGULATION OF REACTIVE OXYGEN SPECIES METABOLIC PROCESS"|
+                     BP_intestinal$pathway =="REGULATION OF WOUND HEALING"|
+                     BP_intestinal$pathway =="REGULATION OF ADAPTIVE IMMUNE RESPONSE"|
+                     BP_intestinal$pathway =="RESPONSE TO INTERLEUKIN 1"|
+                     BP_intestinal$pathway =="P38MAPK CASCADE"|
+                     BP_intestinal$pathway =="NIK NF KAPPAB SIGNALING"|
+                     BP_intestinal$pathway =="REGULATION OF CELL MATRIX ADHESION")
+
+pos_circulating <- which(BP_circulating$pathway == "REGULATION OF CELL POPULATION PROLIFERATION" |
+                           BP_circulating$pathway == "REACTIVE OXYGEN SPECIES BIOSYNTHETIC PROCESS" |
+                     BP_circulating$pathway == "PROTEIN LOCALIZATION TO ENDOPLASMIC RETICULUM"|
+                     BP_circulating$pathway == "RESPONSE TO MECHANICAL STIMULUS"|
+                     BP_circulating$pathway == "LEUKOCYTE MIGRATION"|  
+                      BP_circulating$pathway == "REGULATION OF MYELOID CELL DIFFERENTIATION")
+
+
+
+#plot
+merged <- merge(BP_progenitors[pos_progenitors,c(1,5)], BP_immature[pos_immature,c(1,5)], by = "pathway" , all = T,
+                suffixes = c(".progenitors",".immature"))
+merged2 <- merge(merged, BP_circulating[pos_circulating,c(1,5)], by = "pathway" , all = T,
+                 suffixes = c(".progenitors",".immature"))
+merged3 <- merge(merged2,  BP_basal[pos_basal,c(1,5)], by = "pathway" , all = T, 
+                 suffixes = c(".circulating",".basal"))
+merged4 <- merge(merged3, BP_intestinal[pos_intestinal,c(1,5)], by = "pathway" , all = T)
+colnames(merged4) <- c("pathway","progenitors", "immature", "circulating", "basal", "intestinal")
+merged4[is.na(merged4)] <- 0
+rownames(merged4) <- merged4$pathway
+rownames(merged4)<- tolower(rownames(merged4))
+merged4[,1] <- NULL
+
+
+paletteLength <- 100
+myColor = colorRampPalette(c("Darkblue", "white", "red"))(paletteLength)
+myBreaks = c(seq(min(merged4), 0,
+                      length.out=ceiling(paletteLength/2) + 1),
+                  seq(max(merged4)/paletteLength,
+                      max(merged4),
+                      length.out=floor(paletteLength/2)))
+pheatmap(merged4, cluster_cols = F, cluster_rows = T, border_color="grey", 
+         cellwidth =30, col=myColor, breaks =myBreaks, main = "Biological process enrichment", 
+         angle_col = 45, fontsize=14, fontsize_row = 10, filename = "GO.pdf")
 
