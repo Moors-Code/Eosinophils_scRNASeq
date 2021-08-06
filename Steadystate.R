@@ -1,11 +1,12 @@
-source('~/NAS/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Packages_functions.R', echo=TRUE)
+source('Packages_functions.R', echo=TRUE)
+readRDS(eosinophil_pure)
 
 #####SUBSET STEADYSTATE ORGANS#####
 DimPlot(eosinophil_pure)
 Idents(eosinophil_pure) <- "orig.ident"
 eosinophils_steadystate <- subset(eosinophil_pure,  idents = c("bonemarrow", "blood", "Spleen", "stomach", "SI", "colon"))
 current.cluster.ids <- c("bonemarrow", "blood", "Spleen", "stomach", "SI", "colon")
-new.cluster.ids <-  c("bonemarrow", "blood", "spleen", "stomach", "small intestine", "colon")
+new.cluster.ids <-  c("bonemarrow", "blood", "spleen", "stomach", "small intestine", "colon") #all lowercase
 eosinophils_steadystate$orig.ident <- plyr::mapvalues(x = eosinophils_steadystate$orig.ident, from = current.cluster.ids, to = new.cluster.ids)
 eosinophils_steadystate$orig.ident <- factor(x = eosinophils_steadystate$orig.ident, levels = c("bonemarrow", "blood", "spleen", "stomach", "small intestine", "colon"))
 eosinophils_steadystate <- NormalizeData(eosinophils_steadystate, normalization.method = "LogNormalize", scale.factor = 10000)
@@ -22,7 +23,7 @@ DimPlot(eosinophils_steadystate, cols = col_vector, label = T)
 FeaturePlot(eosinophils_steadystate, features = c("Mki67", "Camp", "Ltf", "Ly6a2", "Ly6g", "Epx",  "Siglece", "Retnlg", "Retnla", "Cd274"), order=T)
 FeaturePlot(eosinophils_steadystate, features = c("Icosl")
 
-#remove cluster mito high and diff neu
+#remove cluster mito high and differentiating neutrophils
 eosinophils_steadystate <- subset(eosinophils_steadystate,  idents = c(0,1,2,3)) #then run the analysis from line 6
 
 #rename clusters
@@ -116,10 +117,18 @@ View(markers_steadystate %>% group_by(cluster) %>% top_n(n = 20, wt = avg_log2FC
 top200 <- markers_steadystate %>% group_by(cluster) %>% top_n(n = 200, wt = avg_log2FC)
 write.csv(top200,"/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Steadystate/markers_steadystate.csv", row.names = TRUE)
 
+#markers density
+a<-plot_density(eosinophils_steadystate, "Mki67", pal = "magma")
+b<-plot_density(eosinophils_steadystate, "S100a9", pal = "magma")
+c<-plot_density(eosinophils_steadystate, "Cd24a", pal = "magma")
+d<-plot_density(eosinophils_steadystate, "Siglece", pal = "magma")
+e<-plot_density(eosinophils_steadystate, "Cd274", pal = "magma")
+ggarrange(a, b, c,d,e, ncol = 3, nrow = 2) + ggsave("Figures/MarkersFeature.pdf", width = 17, height = 10)
+
 #steadystate dotplot
 final.markers <- c("Mki67", "Tuba1b", "Epx", "Prg3", "Prg2","Ear1","Ear2", "Ear6",  "Cd63", "Cebpe",
                    "Alox15", "Aldh2", "S100a9", "S100a6", "S100a10", "Il5", "Retnla", "Ccl9", "Il1rl1", 
-                   "Cd24a", "Mmp9", "Icosl", "Il4", "Tgfb1", "Cd80", "Cd274", "Ptgs2", "Il1rn", "Il1b", 
+                   "Cd24a", "Mmp9", "Icosl", "Il4", "Tgfb1", "Pirb", "Rara", "Cd80", "Cd274", "Ptgs2", "Il1rn", "Il1b", 
                    "Vegfa", "Ccl3", "Cxcl2", "Il16", "Tnf")
 
 eosinophils_steadystate$seurat_clusters <- factor(x = eosinophils_steadystate$seurat_clusters, levels = c("intestinal eosinophils","basal eosinophils", "circulating eosinophils","immature eosinophils",  "eosinophil progenitors"))
@@ -128,50 +137,6 @@ DotPlot(eosinophils_steadystate, features = final.markers , dot.scale = 10) + Ro
   theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
   scale_colour_gradientn(colours = pal)+ theme(legend.position="right")  + labs(title = "cluster markers", y = "", x="")+
   ggsave("Figures/steadystate_dotplot.pdf", width = 15, height = 3.5)
-
-#top20 <- markers_steadystate %>% group_by(cluster) %>% top_n(n = 20, wt = avg_log2FC)
-#DoHeatmap(eosinophils_steadystate, features = top20$gene,    label=F, draw.lines	= T,    group.by = "seurat_clusters",
-       #   lines.width = 100, group.colors	= col_vector)+  scale_fill_gradientn(colors = pal,  na.value = "white") + theme(axis.text.y = element_text(face = "italic") )
-
-#selected.markers <- c("Mki67", "Spi1", "Chil3", "S100a8", "S100a9", "Prtn3", "Elane", "Tuba1b", "Cebpe", "Prg3",  "Prg2",  "Epx", 
-#                      "Ear6", "Ear1", "Ear2", "Cd63", "Alox15","Gata2","Retnla","Retnlg","Ltb", "Mmp9", "Ffar2",  "Icosl","Il1rn", "Il1b", 
-#                      "Cd274", "Cd80", "Ccl3", "Cxcl2", "Vegfa", "Csf2rb", "Il10rb","Ahr", "Ptafr", "Ldlr")
-
-#selected.markers.2 <- c("Alox15", "Vegfa", "Il1b", "Tnf", "Tnfrsf1a", "Il4", "Il13", "Il6", "Osm", "Ccl3", "Cxcl2", "Ifng", "Ccl9",
-#                       "Cxcr4","Il10rb","Ifngr1", "Tgfbr2", "Csf2rb","Rela", "Myd88", "Stat3", "Stat1", "Sirpa", "Cd300a", "Cd300f", "Cd300lf", 
-#                        "Aldh1", "Aldh2", "Ahr")
-
-#cytokines <- c("Il1b", "Il2", "Il3","Il4", "Il5", "Il6", "Il10", "Il11", "Il12a", "Il13","Il15", "Il16",
-#               "Il18", "Il23a", "Il25", "Il33", 
-#               "Csf2", "Tnf", "Ifng", "Osm", "Tgfb1")
-
-#chemokines <- c("Ccl3", "Ccl5", "Ccl7","Ccl11", "Ccl13", "Ccl17", "Ccl22", "Ccl23", "Cxcl1", "Cxcl2", "Cxcl3",
-#                "Cxcl5", "Cxcl8", "Cxcl9", "Cxcl10", "Cxcl11")
-
-#plot1 <- DotPlot(eosinophils_steadystate, features = selected.markers , dot.scale = 10) + RotatedAxis()+ 
-#  theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
-#  scale_colour_gradientn(colours = pal)+ theme(legend.position="right")+ labs(title = "selected markers", y = "", x="")
-
-#plot2 <- DotPlot(eosinophils_steadystate, features = selected.markers.2 , dot.scale = 10) + RotatedAxis()+ 
-#  scale_colour_gradientn(colours = pal)+ theme(legend.position="right")+ labs(title = "selected markers", y = "", x="")
-#  theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
-
-#plot3 <- DotPlot(eosinophils_steadystate, features = cytokines , dot.scale = 10) + RotatedAxis() + 
-#  theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
-#  scale_colour_gradientn(colours = pal)+ theme(legend.position="right")+ labs(title = "cytokines", y = "", x="")
-
-#plot4 <- DotPlot(eosinophils_steadystate, features = chemokines , dot.scale = 10) + RotatedAxis() +
-#  theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
-#  scale_colour_gradientn(colours = pal)+ theme(legend.position="right")  + labs(title = "chemokines", y = "", x="")
-
-#ggarrange(plot1, plot2, plot3, plot4, ncol = 1, nrow = 4)
-
-#il10.markers <- c("Il10ra", "Il10rb", "Stat3")
-#DotPlot(eosinophils_steadystate, features = il10.markers , dot.scale = 10) + RotatedAxis() +
-#  scale_colour_gradientn(colours = pal)+ theme(legend.position="right")  + labs(title = "cluster markers", y = "", x="") +
-#  theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
-#  ggsave("Il10_dotplot.pdf", width = 8, height = 3)
-
 
 ###PROGENITORS######
 #Cell cycle score
@@ -201,30 +166,11 @@ RidgePlot(eosinophils_steadystate, features="CC1", group.by = "seurat_clusters",
   theme(text = element_text(size=25)) + labs (title = "Cell cycle score ", y = " ", x= " ") +theme(legend.position="none")+
   ggsave("Figures/CC_ridge.pdf", width = 8, height = 6)
 
-#VlnPlot(eosinophils_steadystate, features= "CC1", group.by = "seurat_clusters", rev(col_vector[1:5]), pt.size = 0) +  theme_classic() + 
-#  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() +
-#  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+ 
-#  labs(title = "", y = "", x="") + theme(legend.position="right") +  
-#  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
-#  ggsave("Figures/CC_violin.pdf", width = 8, height = 6)
-
 #test
 Idents(eosinophils_steadystate) <- "seurat_clusters"
 eos_prog <- subset(eosinophils_steadystate, idents = c("eosinophil progenitors"))
 eos_immature <- subset(eosinophils_steadystate, idents = c("immature eosinophils"))
 wilcox.test(eos_prog$CC1, eos_immature$CC1, alternative = "two.sided") #p-value < 2.2e-16
-
-#S <- RidgePlot(tmp, features=(vars = c("S.Score")), group.by = "seurat_clusters", rev(col_vector[1:5])) +
-#  theme_classic()+
-#  theme(text = element_text(size=25)) + labs (title = "S phase score", y = "", x= " ")+theme(legend.position="none")
-
-#G2M<-RidgePlot(tmp, features=(vars = c("G2M.Score")), group.by = "seurat_clusters", rev(col_vector[1:5])) +
-#  theme_classic() +
-#  theme(text = element_text(size=25)) + labs (title = "G2M phase score", y = "", x= " ") +theme(legend.position="none")
-
-#ggarrange(S, G2M, ncol = 2, nrow = 1)+
-#  ggsave("CellCycle.pdf", width = 12, height = 3)
-
 
 #stemness score (Koeva et al, 2011)
 stemness_list <- list(c("Orc1l", "Impdh2", "Cct5", "Nap1l1", "Ccnd2", "Smo", "Mcm4", "Mcm5", "Hells", "Hnrnpa2b1", "Cct8", "Col18a1", "Sfrs3", 
@@ -243,17 +189,6 @@ VlnPlot(eosinophils_steadystate, features= "Stemness1", group.by = "seurat_clust
 
 #test
 wilcox.test(eos_prog$Stemness1, eos_immature$Stemness1, alternative = "two.sided") #p-value < 2.2e-16
-
-
-###APOPTOSIS####
-apoptosis.score <- list(c(BP[["GOBP_APOPTOTIC_PROCESS"]]))
-eosinophils_steadystate <- AddModuleScore(eosinophils_steadystate, features= apoptosis.score,name = "apoptosis.score")
-VlnPlot(eosinophils_steadystate, features="apoptosis.score1", group.by = "seurat_clusters", rev(col_vector[1:5]), pt.size = 0) +  theme_classic() + 
-  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
-  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+
-  labs(title = "", y = "Apoptosis score ", x="") + theme(legend.position="right") +  
-  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
-  ggsave("Apoptosis_violin.pdf", width = 8, height = 6)
 
 ####GRANULES AND ANTIMICROBIAL####
 #Granules synthesis
@@ -290,13 +225,7 @@ VlnPlot(eosinophils_steadystate, features="Antimicrobial1", group.by = "seurat_c
            color="black", size=5,   fontface="italic",  hjust = 0)+
   ggsave("Figures/Antimicrobial_violin.pdf", width = 8, height = 6)
 
-#heatmap
-antimicrobial_data <- AverageExpression(eosinophils_steadystate, features = c("S100a8", "S100a9", "Gbp2", "Prg2", "Epx", "Ear1", "Ear2", "Ear6", "Gbp7", "Ltf", 
-                                                                              "Lcn2", "Lyz2", "Irgm1", "Camp", "Adam17", "Serpine1", "H2-D1", "H2-T23", "H2-Q7"))
-
-pheatmap(antimicrobial_data$RNA, scale = 'row', cluster_rows = F, angle_col = "45", filename = "Figures/Antimicrobial_heatmap.pdf")
-
-#ifng regulated antimicrobial
+#ifng regulated antimicrobial signature
 IFNg_regulated <- list(c("Irgm1", "Camp", "Adam17", "Serpine1", "H2-D1", "H2-T23", "H2-Q7"))
 eosinophils_steadystate <-AddModuleScore(eosinophils_steadystate, features= IFNg_regulated,name = "IFNg_regulated")
 names(x = eosinophils_steadystate[[]])
@@ -328,9 +257,6 @@ DotPlot(eosinophils_steadystate, features = Nfkb.markers , dot.scale = 10) + Rot
   scale_colour_gradientn(colours = pal)+ theme(legend.position="right")  + labs(title = "cluster markers", y = "", x="") +
   ggsave("Nfkb_dotplot.pdf", width = 7, height = 2.8)
 
-#Nfkb_list <- list(c("Nfkb1", "Nfkbib", "Nfkbia", "Nfkbie", "Nfkb2", "Nfkbiz",  "Rela", "Relb"))
-#eosinophils_steadystate <-AddModuleScore(eosinophils_steadystate, features= Nfkb_list,name = "Nfkb")
-#names(x = eosinophils_steadystate[[]])
 #VlnPlot(eosinophils_steadystate, features="Nfkb1", group.by = "seurat_clusters", rev(col_vector[1:5]), pt.size = 0) +  theme_classic() + 
   theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+
