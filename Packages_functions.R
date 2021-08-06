@@ -169,32 +169,14 @@ GSEA_dotplot <- function(BP_cluster, positions, title) {
 
 
 
-###IMPORT DATASETS ####
+###IMPORT DATASET: Biological process ####
 msigdbr_species()
-m_df<- msigdbr(species = "Mus musculus", category = "H")
-#Hallmarks <- m_df %>% split(x = .$gene_symbol, f = .$gs_name)
-#head(Hallmarks)
-#m_df<- msigdbr(species = "Mus musculus", category = "C2", subcategory = "CGP")
-#CGP <- m_df %>% split(x = .$gene_symbol, f = .$gs_name)
-#head(CGP)
-#m_df<- msigdbr(species = "Mus musculus", category = "C2", subcategory = "CP:KEGG")
-#KEGG <- m_df %>% split(x = .$gene_symbol, f = .$gs_name)
-#head(KEGG)
-#m_df<- msigdbr(species = "Mus musculus", category = "C2", subcategory = "CP:REACTOME")
-#REACTOME <- m_df %>% split(x = .$gene_symbol, f = .$gs_name)
-#head(REACTOME)
-#m_df<- msigdbr(species = "Mus musculus", category = "C3", subcategory = "TFT")
-#TFT <- m_df %>% split(x = .$gene_symbol, f = .$gs_name)
-#head(TFT)
 m_df<- msigdbr(species = "Mus musculus", category = "C5", subcategory = "BP")
 BP <- m_df %>% split(x = .$gene_symbol, f = .$gs_name)
 head(BP)
-#m_df<- msigdbr(species = "Mus musculus", category = "C6")
-#oncSig <- m_df %>% split(x = .$gene_symbol, f = .$gs_name)
-#head(oncSig)
 
 
-####COLOR PALETTE####
+####COLOR PALETTE FOR PLOTS ####
 n <- 30
 qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
 col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
