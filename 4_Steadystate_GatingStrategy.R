@@ -14,9 +14,9 @@ circulating_surface_markers <- circulating_markers[rownames(circulating_markers)
 circulating_surface_markers$Gene <- rownames(circulating_surface_markers)
 basal_surface_markers <- basal_markers[rownames(basal_markers) %in% surface_markers$Gene,]
 basal_surface_markers$Gene <- rownames(basal_surface_markers)
-intestinal_surface_markers <- intestinal_markers[rownames(intestinal_markers) %in% surface_markers$Gene,]
-intestinal_surface_markers$Gene <- rownames(intestinal_surface_markers)
-View(intestinal_surface_markers)
+active_surface_markers <- active_markers[rownames(active_markers) %in% surface_markers$Gene,]
+active_surface_markers$Gene <- rownames(active_surface_markers)
+View(active_surface_markers)
 
 #merge and make heatmap
 merged <- merge(prog_surface_markers[,c(2,6)], immature_surface_markers[,c(2,6)], by = "Gene" , all = T,
@@ -26,8 +26,8 @@ merged2 <- merge(merged, circulating_surface_markers[,c(2,6)], by = "Gene" , all
                 suffixes = c(".progenitors",".immature"))
 merged3 <- merge(merged2, basal_surface_markers[,c(2,6)], by = "Gene" , all = T, 
                  suffixes = c(".circulating",".basal"))
-merged4 <- merge(merged3, intestinal_surface_markers[,c(2,6)], by = "Gene" , all = T)
-colnames(merged4) <- c("Gene","progenitors", "immature", "circulating", "basal", "intestinal")
+merged4 <- merge(merged3, active_surface_markers[,c(2,6)], by = "Gene" , all = T)
+colnames(merged4) <- c("Gene","progenitors", "immature", "circulating", "basal", "active")
 merged4[is.na(merged4)] <- 0
 row.names(merged4) <- merged4$Gene
 merged4[1] <- NULL
@@ -44,23 +44,23 @@ cytek.markers <- c(  "Clec12a", "Siglece", "Itga4",    "Cd274",   "Cd80",  "Ly6a
 plot <- DotPlot(eosinophils_steadystate, features = cytek.markers)
 plot + theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
   scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdYlBu")))+ theme(legend.position="right")+ labs(title = "Cytek markers", y = "", x="")+
-  ggsave("cytekmarkers.png", width = 12, height = 3)
+  ggsave("Figures/cytekmarkers.png", width = 12, height = 3)
 
 
 ### SURFACER MARKERS ###
 Idents(eosinophils_steadystate) <- "seurat_clusters"
-basal_intestinal <- subset(eosinophils_steadystate, idents = c("intestinal eosinophils", "basal eosinophils"))
+basal_active <- subset(eosinophils_steadystate, idents = c("active eosinophils", "basal eosinophils"))
 surface.markers <- c("Cd274", "Cd80","Cd9","Pecam1", "Icam1", "Fas", "Ly6a", "Itgax", "Itga4", "Clec12a", "Siglece")
-DotPlot(basal_intestinal, features = selected_markers,  dot.scale = 40)
+DotPlot(basal_active, features = selected_markers,  dot.scale = 40)
 plot + theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1,size=20), axis.text.y = element_text(face="bold", size=20)) + 
   scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdYlBu")))+ theme(legend.position="right")+ labs(title = "FACS markers", y = "", x="")+
-  ggsave("FACSmarkers.pdf", width = 12, height = 3)
+  ggsave("Figures/FACSmarkers.pdf", width = 12, height = 3)
 
-data <- AverageExpression(basal_intestinal, features =  surface.markers)
+data <- AverageExpression(basal_active, features =  surface.markers)
 data
 pheatmap(data$RNA[,c(2,1)], cluster_columns = F, scale = "row", 
          fontsize_number = 0.5, cellwidth =30, cellheight = 30, treeheight_row=0, treeheight_col=0,	
-         border_color = "white", color = colorRampPalette(rev(brewer.pal(n = 4, name =  "RdYlBu")))(100), filename = "FACSmarkers_heatmap_h.pdf")
+         border_color = "white", color = colorRampPalette(rev(brewer.pal(n = 4, name =  "RdYlBu")))(100), filename = "Figures/FACSmarkers_heatmap_h.pdf")
 
 
 ##blended featureplot
