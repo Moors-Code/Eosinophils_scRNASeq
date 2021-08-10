@@ -85,65 +85,6 @@ VlnPlot(eos_challenge, features = "predicted.id.score", group.by = "orig.ident")
 
 View(markers %>% group_by(cluster) %>% top_n(n = 20, wt = avg_log2FC))
 
-#####PROLIFERATION AND STEMNESS SCORE#####
-refquery <- AddModuleScore(refquery, features = cc.genes, name = "CC")
-names(x = refquery[[]])
-RidgePlot(refquery_sub, features="CC2", group.by = "orig.ident", col= c("gray45", "khaki2", "gray86", "orange2", "grey", "red", "grey16", "darkred")) +
-  theme_classic() +  
-  theme(text = element_text(size=25)) + labs (title = "", y = " ", x= "Cell cycle score") +theme(legend.position="none")+
-  ggsave("Figures/CC_ridge_organs.pdf", width = 8, height = 6)
-
-stemness_list <- list(c("Orc1l", "Impdh2", "Cct5", "Nap1l1", "Ccnd2", "Smo", "Mcm4", "Mcm5", "Hells", "Hnrnpa2b1", "Cct8", "Col18a1", "Sfrs3", 
-                        "Rrm2", "Bub1", "Ncl", "Kpna2", "Shmt1", "Ipo5", "Ruvbl1", "Shroom3", "Dnahc11", "Cdc6", "Ttk", "Cks2", "Mcm2", "Fignl1", 
-                        "Dph5", "Cdt1", "Cct3", "Eya2", "Pcna", "Set", "Prps1", "Fbl", "Dtymk", "Ssbp1", "Depdc6", "Top2a", "Csrp2"))
-
-Idents(refquery) <- "orig.ident"
-refquery_sub <- subset(refquery, idents= c("bonemarrow", "bonemarrowCR", "blood", "bloodCR", "colon", "colonCR", "stomach", "stomachHP"))
-refquery_sub$orig.ident <- factor(x = refquery_sub$orig.ident , levels = c("bonemarrow", "bonemarrowCR", "blood", "bloodCR", "colon", "colonCR", "stomach", "stomachHP"))
-refquery_sub <-AddModuleScore(refquery_sub, features= stemness_list,name = "Stemness")
-names(x = refquery[[]])
-VlnPlot(refquery_sub, features= "Stemness1", group.by = "orig.ident",col= c("gray45", "khaki2", "gray86", "orange2", "grey", "red", "grey16", "darkred"), pt.size = 0) +  theme_classic() + 
-  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
-  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+ 
-  labs(title = "", y = " Stemness score", x="") + theme(legend.position="right") +  
-  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
-  ggsave("Figures/Stemness_violin.pdf", width = 10, height = 6)
-
-#test
-wilcox.test(eos_prog$Stemness1, eos_immature$Stemness1, alternative = "two.sided") #p-value < 2.2e-16
-
-colononly <- subset(refquery, idents="colon")
-colononly <- AddModuleScore(colononly, features = cc.genes, name = "CC")
-names(x = colononly[[]])
-a <- RidgePlot(colononly, features="CC2", group.by = "seurat_clusters", rev(col_vector[1:4])) +
-  theme_classic() +  xlim(-0.2,1.2)+
-  theme(text = element_text(size=25)) + labs (title = "Colon", y = " ", x= "cell cycle score") +theme(legend.position="none")
-
-colonCRonly <- subset(refquery, idents="colonCR")
-Idents(colonCRonly) <- "seurat_clusters"
-colonCRonly <- subset(colonCRonly, idents=c("immature eosinophils", "circulating eosinophils", "basal eosinophils", "active eosinophils"))
-colonCRonly <- AddModuleScore(colonCRonly, features = cc.genes, name = "CC")
-names(x = colonCRonly[[]])
-b <- RidgePlot(colonCRonly, features="CC2", group.by = "seurat_clusters", rev(col_vector[1:4])) +
-  theme_classic() +  xlim(-0.2,1.2)+
-  theme(text = element_text(size=25)) + labs (title = "ColonCR", y = " ", x= "cell cycle score") +theme(legend.position="none")
-
-stomachonly <- subset(refquery, idents="stomach")
-stomachonly <- AddModuleScore(stomachonly, features = cc.genes, name = "CC")
-names(x = stomachonly[[]])
-c <- RidgePlot(stomachonly, features="CC2", group.by = "seurat_clusters", rev(col_vector[1:5])) +
-  theme_classic() +  xlim(-0.2,1.2)+
-  theme(text = element_text(size=25)) + labs (title = "Stomach", y = " ", x= "cell cycle score") +theme(legend.position="none")
-
-stomachHPonly <- subset(refquery, idents="stomachHP")
-stomachHPonly <- AddModuleScore(stomachHPonly, features = cc.genes, name = "CC")
-names(x = stomachHPonly[[]])
-d <- RidgePlot(stomachHPonly, features="CC2", group.by = "seurat_clusters", rev(col_vector[1:4])) +
-  theme_classic() +  xlim(-0.2,1.2)+
-  theme(text = element_text(size=25)) + labs (title = "StomachHP", y = " ", x= "cell cycle score") +theme(legend.position="none")
-
-ggarrange(a,b,c,d, ncol = 2, nrow = 2)+ ggsave("Figures/CC_ridge.pdf", width = 16, height =16)
-
 #######COMPOSITIONAL ANALYSIS######
 #frequencies per cluster
 numberofcells         <- table(refquery$orig.ident, refquery$seurat_clusters)
@@ -264,15 +205,12 @@ DimPlot(active, group.by = "orig.ident")
 active <- subset(active, ident= c("colon", "stomach", "stomachHP",  "colonCR"))
 Idents(active) <- "orig.ident"
 stomachHP_markers <- FindMarkers(active, ident.1 = "stomachHP", ident.2 = "stomach", verbose = FALSE, only.pos = F)
-write.csv(stomachHP_markers,"/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Challenge/stomachHP_markers.csv", row.names = TRUE)
+write.csv(stomachHP_markers,"stomachHP_markers.csv", row.names = TRUE)
 sig_stomachHP_markers <- stomachHP_markers %>% filter(p_val_adj <0.05)
 
-View(stomachHP_markers)
-
 colonCR_markers <- FindMarkers(active, ident.1 = "colonCR", ident.2 = "colon", verbose = FALSE, only.pos = F)
-write.csv(colonCR_markers,"/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Challenge/colonCR_markers.csv", row.names = TRUE)
+write.csv(colonCR_markers,"colonCR_markers.csv", row.names = TRUE)
 sig_colonCR_markers <-colonCR_markers %>% filter(p_val_adj <0.05)
-
 
 a <- DEGs_volcano(stomachHP_markers, 0.05, 1, "StomachHP vs stomach", "grey89", upperylim = 45, xlim = 4)
 b <- DEGs_volcano(colonCR_markers, 0.05, 1, "ColonCR vs colon", "grey89", upperylim = 50, xlim = 4)
@@ -286,15 +224,15 @@ ggarrange(a, b, c,d,ncol = 4, nrow = 1) +
 commonbacterial <- sig_stomachHP_markers[rownames(sig_stomachHP_markers) %in% sig_colonCR_markers$Gene,]
 nrow(commonbacterial)
 View(commonbacterial)
-write.csv(commonbacterial,"/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Challenge/commonbacterial.csv", row.names = TRUE)
+write.csv(commonbacterial,"commonbacterial.csv", row.names = TRUE)
 seta <- sig_stomachHP_markers$Gene
 setb <- sig_colonCR_markers$Gene
 a<- setdiff(seta,setb)
 only_stomachHP <- sig_stomachHP_markers[a,]
-write.csv(only_stomachHP,"/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Challenge/only_stomachHP.csv", row.names = TRUE)
+write.csv(only_stomachHP,"only_stomachHP.csv", row.names = TRUE)
 b<- setdiff(setb,seta)
 only_colonCR <- sig_colonCR_markers[b,]
-write.csv(only_colonCR,"/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Challenge/only_colonCR.csv", row.names = TRUE)
+write.csv(only_colonCR,"only_colonCR.csv", row.names = TRUE)
 
 #plot
 sig_colonCR_markers$Gene <- rownames(sig_colonCR_markers) 
@@ -310,33 +248,69 @@ dev.off()
 
 
 ####SIGNATURES####
+#####proliferation and stemness
+refquery <- AddModuleScore(refquery, features = cc.genes, name = "CC")
+names(x = refquery[[]])
+RidgePlot(refquery_sub, features="CC2", group.by = "orig.ident", col= c("gray45", "khaki2", "gray86", "orange2", "grey", "red", "grey16", "darkred")) +
+  theme_classic() +  
+  theme(text = element_text(size=25)) + labs (title = "", y = " ", x= "Cell cycle score") +theme(legend.position="none")+
+  ggsave("Figures/CC_ridge_organs.pdf", width = 8, height = 6)
+
+stemness_list <- list(c("Orc1l", "Impdh2", "Cct5", "Nap1l1", "Ccnd2", "Smo", "Mcm4", "Mcm5", "Hells", "Hnrnpa2b1", "Cct8", "Col18a1", "Sfrs3", 
+                        "Rrm2", "Bub1", "Ncl", "Kpna2", "Shmt1", "Ipo5", "Ruvbl1", "Shroom3", "Dnahc11", "Cdc6", "Ttk", "Cks2", "Mcm2", "Fignl1", 
+                        "Dph5", "Cdt1", "Cct3", "Eya2", "Pcna", "Set", "Prps1", "Fbl", "Dtymk", "Ssbp1", "Depdc6", "Top2a", "Csrp2"))
+
+Idents(refquery) <- "orig.ident"
+refquery_sub <- subset(refquery, idents= c("bonemarrow", "bonemarrowCR", "blood", "bloodCR", "colon", "colonCR", "stomach", "stomachHP"))
+refquery_sub$orig.ident <- factor(x = refquery_sub$orig.ident , levels = c("bonemarrow", "bonemarrowCR", "blood", "bloodCR", "colon", "colonCR", "stomach", "stomachHP"))
+refquery_sub <-AddModuleScore(refquery_sub, features= stemness_list,name = "Stemness")
+names(x = refquery[[]])
+VlnPlot(refquery_sub, features= "Stemness1", group.by = "orig.ident",col= c("gray45", "khaki2", "gray86", "orange2", "grey", "red", "grey16", "darkred"), pt.size = 0) +  theme_classic() + 
+  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+ 
+  labs(title = "", y = " Stemness score", x="") + theme(legend.position="right") +  
+  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
+  ggsave("Figures/Stemness_violin.pdf", width = 10, height = 6)
+
+#test
+wilcox.test(eos_prog$Stemness1, eos_immature$Stemness1, alternative = "two.sided") #p-value < 2.2e-16
+
+colononly <- subset(refquery, idents="colon")
+colononly <- AddModuleScore(colononly, features = cc.genes, name = "CC")
+names(x = colononly[[]])
+a <- RidgePlot(colononly, features="CC2", group.by = "seurat_clusters", rev(col_vector[1:4])) +
+  theme_classic() +  xlim(-0.2,1.2)+
+  theme(text = element_text(size=25)) + labs (title = "Colon", y = " ", x= "cell cycle score") +theme(legend.position="none")
+
+colonCRonly <- subset(refquery, idents="colonCR")
+Idents(colonCRonly) <- "seurat_clusters"
+colonCRonly <- subset(colonCRonly, idents=c("immature eosinophils", "circulating eosinophils", "basal eosinophils", "active eosinophils"))
+colonCRonly <- AddModuleScore(colonCRonly, features = cc.genes, name = "CC")
+names(x = colonCRonly[[]])
+b <- RidgePlot(colonCRonly, features="CC2", group.by = "seurat_clusters", rev(col_vector[1:4])) +
+  theme_classic() +  xlim(-0.2,1.2)+
+  theme(text = element_text(size=25)) + labs (title = "ColonCR", y = " ", x= "cell cycle score") +theme(legend.position="none")
+
+stomachonly <- subset(refquery, idents="stomach")
+stomachonly <- AddModuleScore(stomachonly, features = cc.genes, name = "CC")
+names(x = stomachonly[[]])
+c <- RidgePlot(stomachonly, features="CC2", group.by = "seurat_clusters", rev(col_vector[1:5])) +
+  theme_classic() +  xlim(-0.2,1.2)+
+  theme(text = element_text(size=25)) + labs (title = "Stomach", y = " ", x= "cell cycle score") +theme(legend.position="none")
+
+stomachHPonly <- subset(refquery, idents="stomachHP")
+stomachHPonly <- AddModuleScore(stomachHPonly, features = cc.genes, name = "CC")
+names(x = stomachHPonly[[]])
+d <- RidgePlot(stomachHPonly, features="CC2", group.by = "seurat_clusters", rev(col_vector[1:4])) +
+  theme_classic() +  xlim(-0.2,1.2)+
+  theme(text = element_text(size=25)) + labs (title = "StomachHP", y = " ", x= "cell cycle score") +theme(legend.position="none")
+
+ggarrange(a,b,c,d, ncol = 2, nrow = 2)+ ggsave("Figures/CC_ridge.pdf", width = 16, height =16)
+
+#compute signatures in stomach and colon only
 active_challenge <- subset(active, idents=c("stomach", "stomachHP", "colon", "colonCR"))
 active_challenge$orig.ident <- factor(x = active_challenge$orig.ident , levels = c("colon", "colonCR","stomach", "stomachHP"))
 Idents(active_challenge) <-"orig.ident"
-
-#NFKB
-#Nfkb_list <- list(c("Nfkb1", "Nfkbib", "Nfkbia", "Nfkbie", "Nfkb2", "Nfkbiz",  "Rela", "Relb"))
-#active_challenge <-AddModuleScore(active_challenge, features= Nfkb_list,name = "Nfkb")
-#names(x = active_challenge[[]])
-
-#VlnPlot(active_challenge, features="Nfkb1", group.by = "orig.ident", col_vector, pt.size = 0) +  theme_classic() + 
-#  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
-#  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+
-#  labs(title = " Nfkb activity", x="", y="Expression") + theme(legend.position="right") +  
-#  annotate(geom="text", x=0.5, y=2.1, label="(Nfkb1, Nfkbib, Nfkbia, Nfkbie, \nNfkb2, Nfkbiz, Rela, Relb)", color="black", size=5,   fontface="italic",  hjust = 0)+
-#  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
-#  ggsave("Nfkb_activity_violin.pdf", width = 8, height = 4)
-
-#Regulatory_list <-  list(c("Icosl", "Cd274", "Cd80", "Cd9"))
-#active_challenge <-AddModuleScore(active_challenge, features= Regulatory_list,name = "Regulatory")
-#names(x = active_challenge[[]])
-#VlnPlot(active_challenge, features="Regulatory1", group.by = "orig.ident", col_vector, pt.size = 0) +  theme_classic() + 
-#  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
-#  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+
-#  labs(title = " Regulatory score", y = "Expression", x="") + theme(legend.position="right") +  
-#  annotate(geom="text", x=0.5, y=2.49, label="(Icosl, Cd274, Cd80, Cd9)", color="black", size=5,   fontface="italic",  hjust = 0)+
-#  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
-#  ggsave("Regulatory_violin.pdf", width = 8, height = 4)
 
 #granules
 Granules_synthesis_list <-   list(c("Prg2", "Prg3",  "Epx", "Ear6", "Ear1", "Ear2"))
@@ -353,7 +327,6 @@ VlnPlot(active_challenge, features="Granules1", group.by = "orig.ident", cols= c
 wilcox.test(eos_colonCR$Granules1, eos_colon$Granules1, alternative = "two.sided") #p-value < 2.2e-16
 wilcox.test(eos_stomachHP$Granules1, eos_stomach$Granules1, alternative = "two.sided") #p-value < 2.2e-16
 
-
 #antigen processing
 Antigen_processing <- list(c("H2-D1", "H2-Q7", "H2-K1", "H2-T23","H2-Q4","Tap1","Tapbp","B2m", "Psmb8", "Psme1",
                              "Psmb9", "Calr", "Psmb10", "Ncf1", "Fcer1g"))
@@ -368,8 +341,7 @@ VlnPlot(active_challenge, features="Antigen_processing1", group.by = "orig.ident
 wilcox.test(eos_colonCR$Antigen_processing1, eos_colon$Antigen_processing1, alternative = "two.sided") #p-value < 2.2e-16
 wilcox.test(eos_stomachHP$Antigen_processing1, eos_stomach$Antigen_processing1, alternative = "two.sided") #p-value < 2.2e-16
 
-
-#ifng
+#ifng-regulated antimicrobial signature
 IFNg_regulated <- list(c("Irgm1", "Camp", "Adam17", "Serpine1", "H2-D1", "H2-T23", "H2-Q7"))
 active_challenge <-AddModuleScore(active_challenge, features= IFNg_regulated,name = "IFNg_regulated")
 names(x = active_challenge[[]])
@@ -384,7 +356,7 @@ VlnPlot(active_challenge, features="IFNg_regulated1", group.by = "orig.ident", c
 wilcox.test(eos_colonCR$IFNg_regulated1, eos_colon$IFNg_regulated1, alternative = "two.sided") #p-value < 2.2e-16
 wilcox.test(eos_stomachHP$IFNg_regulated1, eos_stomach$IFNg_regulated1, alternative = "two.sided") #p-value < 2.2e-16
 
-
+#ifng signature
 IFNg_signature <- list(c("Ccl9", "Cxcl9", "Cxcl10", "Cd274", "Gbp2", "Irf1", "H2-D1", "H2-Q4", "H2-Q7", "H2-K1", 
                          "Gbp7", "Stat1", "Irgm1", "B2m", "Irf9", "Ifitm3", "H2-T23", "Icam1", "Jak2", "Irf2", "Ifngr2"))
 
@@ -429,10 +401,7 @@ pheatmap(antimicrobial_data$RNA, scale = 'row', cluster_rows = T, cluster_cols =
          fontsize_number = 0.5, cellwidth =30, cellheight = 20, treeheight_row=0, treeheight_col=0,	
          angle_col = "45",color = colorRampPalette(rev(brewer.pal(n = 5, name =  "RdYlBu")))(100), filename = "Figures/Antimicrobial_heatmap.pdf")
 
-
-
-###APOPTOSIS####
-Idents(active_challenge) <- "orig.ident"
+#apoptosis
 apoptosis.score <- list(c(BP[["GOBP_APOPTOTIC_PROCESS"]]))
 active_challenge <- AddModuleScore(active_challenge, features= apoptosis.score,name = "apoptosis.score")
 VlnPlot(active_challenge, features="apoptosis.score1", group.by = "orig.ident",cols= c("grey", "red", "grey16", "darkred"), pt.size = 0) +  theme_classic() + 
@@ -445,18 +414,16 @@ wilcox.test(eos_colonCR$apoptosis.score1, eos_colon$apoptosis.score1, alternativ
 wilcox.test(eos_stomachHP$apoptosis.score1, eos_stomach$apoptosis.score1, alternative = "two.sided") #p-value < 2.2e-16
 
 
-
-
-######BONE MARROW AND BLOOD CR#####
+######BONE MARROW AND BLOOD C.Rodentium#####
 Idents(refquery) <- "orig.ident"
 bonemarrow_CR_markers <- FindMarkers(refquery, ident.1 = "bonemarrowCR", ident.2 = "bonemarrow", verbose = FALSE)
 View(bonemarrow_CR_nomarkers)
-write.csv(bonemarrow_CR_markers %>% top_n(n = 200, wt = avg_log2FC),"/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Challenge/bonemarrow_CR_markers.csv", row.names = TRUE)
+write.csv(bonemarrow_CR_markers %>% top_n(n = 200, wt = avg_log2FC),"bonemarrow_CR_markers.csv", row.names = TRUE)
 
 
 blood_CR_markers <- FindMarkers(refquery, ident.1 = "bloodCR", ident.2 = "blood", verbose = FALSE)
 View(blood_CR_markers)
-write.csv(blood_CR_markers %>% top_n(n = 200, wt = avg_log2FC),"/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Challenge/blood_CR_markers.csv", row.names = TRUE)
+write.csv(blood_CR_markers %>% top_n(n = 200, wt = avg_log2FC),"blood_CR_markers.csv", row.names = TRUE)
 
 
 BMBlood_challenge <- subset(refquery, idents=c("bonemarrow", "bonemarrowCR", "blood", "bloodCR"))
@@ -508,7 +475,6 @@ RidgePlot(BMBlood_challenge, features="CC2", group.by = "orig.ident", cols= c("g
   ggsave("Figures/CC_ridgeBMBLOOD.pdf", width = 8, height = 6)
 
 
-
 #####CIRCULATING EOSINOPHILS DURING CHALLENGE#####
 DimPlot(refquery, group.by = "orig.ident")
 eos_circulating <- subset(refquery, idents = "circulating eosinophils")
@@ -531,9 +497,7 @@ b <- DEGs_volcano(circulating_markers_HP, 0.05, 1, "circulating eos: stomachHP v
 ggarrange(a, b, c, ncol = 3, nrow=1) 
 DEGs_volcano(circulating_markers_CR_colonblood, 0.05, 1, "circulating eos: colonCR vs bloodCR", "grey89", upperylim = 10, xlim = 5)+ggsave("Figures/Circulating_volcanos.pdf", width = 5, height = 5)
 
-
-
-write.csv(only_colonCR,"/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Challenge/only_colonCR.csv", row.names = TRUE)
+write.csv(only_colonCR,"only_colonCR.csv", row.names = TRUE)
 
 
 #####FGSEA####
