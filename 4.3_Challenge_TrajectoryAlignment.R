@@ -19,16 +19,16 @@ BBC <- RunUMAP(BBC, dims = 1:20)
 DimPlot(BBC, cols = col_vector, label = T)   
 DimPlot(BBC, cols = col_vector, label = T, group.by = "seurat.clusters")   
 data_BBC <- as(as.matrix(BBC@assays$RNA@data), 'sparseMatrix') 
-save(data_BBC,file="/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Monocle/Trajectory_alignment/BBC_data.Rdata")
+save(data_BBC,file="/Trajectory_alignment/BBC_data.Rdata")
 pd_BBC <- new('AnnotatedDataFrame', data = BBC@meta.data) 
 head(pd)
-save(pd,file="/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Monocle/Trajectory_alignment/BBC_pd.Rdata")
+save(pd,file="/Trajectory_alignment/BBC_pd.Rdata")
 fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data)) 
-save(fData,file="/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Monocle/Trajectory_alignment/BBC_fData.Rdata")
+save(fData,file="/Trajectory_alignment/BBC_fData.Rdata")
 fd <- new('AnnotatedDataFrame', data = fData) 
-save(fd,file="/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Monocle/Trajectory_alignment/BBC_fd.Rdata")
+save(fd,file="/Trajectory_alignment/BBC_fd.Rdata")
 variablefeatures <- BBC@assays$RNA@var.features
-save(variablefeatures, file="/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Monocle/Trajectory_alignment/BBC_variablefeatures.Rdata")
+save(variablefeatures, file="/Trajectory_alignment/BBC_variablefeatures.Rdata")
 
 BBCCR <- subset(refquery,  idents = c("bonemarrowCR", "bloodCR", "colonCR"))
 BBCCR <- NormalizeData(BBCCR, normalization.method = "LogNormalize", scale.factor = 10000)
@@ -46,18 +46,28 @@ DimPlot(BBCCR, cols = col_vector, label = T, group.by = "seurat_clusters")
 FeaturePlot(BBCCR, features = "S100a9")
 FeaturePlot(BBCCR, features = "Cd274")
 data <- as(as.matrix(BBCCR@assays$RNA@data), 'sparseMatrix') 
-save(data,file="/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Monocle/Trajectory_alignment/BBCCR_data.Rdata")
+save(data,file="/Trajectory_alignment/BBCCR_data.Rdata")
 pd <- new('AnnotatedDataFrame', data = BBCCR@meta.data) 
 head(pd)
-save(pd,file="/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Monocle/Trajectory_alignment/BBCCR_pd.Rdata")
+save(pd,file="/Trajectory_alignment/BBCCR_pd.Rdata")
 fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data)) 
-save(fData,file="/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Monocle/Trajectory_alignment/BBCCR_fData.Rdata")
+save(fData,file="/Trajectory_alignment/BBCCR_fData.Rdata")
 fd <- new('AnnotatedDataFrame', data = fData) 
-save(fd,file="/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Monocle/Trajectory_alignment/BBCCR_fd.Rdata")
+save(fd,file="/Trajectory_alignment/BBCCR_fd.Rdata")
 variablefeatures <- BBCCR@assays$RNA@var.features
-save(variablefeatures, file="/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Monocle/Trajectory_alignment/BBCCR_variablefeatures.Rdata")
+save(variablefeatures, file="/Trajectory_alignment/BBCCR_variablefeatures.Rdata")
 
-#####ALL STEADY STATE ORGANS#####
+######CREATE STEADYSTAE AND CHALLENGE TRAJECTORIES (run in R3.6)
+library(devtools)
+library(Seurat)
+library(BiocManager)
+library(dplyr)
+library(ggplot2)
+library(ggraph)
+library(monocle)
+library(viridis)
+
+#####steadystate bonemarrow-blood-colon#####
 monocle_BBC <- newCellDataSet(data,
                              phenoData = pd,
                              featureData = fd,
@@ -74,7 +84,7 @@ monocle_BBC <- orderCells(monocle_BBC, reverse = T)
 trajectory_plot <- plot_cell_trajectory(monocle_BBC,
                                         show_tree=T,
                                         show_branch_points = T, cell_size =0.5, color_by = "orig.ident")+
-  ggsave("trajectoryBBC.pdf", width = 5, height = 5)
+  ggsave("Figures/trajectoryBBC.pdf", width = 5, height = 5)
 
 
 monocle_BBCR <- newCellDataSet(data,
@@ -94,7 +104,7 @@ plot_cell_trajectory(monocle_BBCR, show_tree=F, show_branch_points = F, cell_siz
   theme(legend.position = "right") + scale_color_manual(values=rev(col_vector[1:5]))+ 
   ggsave("Figures/trajectoryBBCCR.pdf", width = 7, height =4)
 
-
+####ALIGN TRAJECTORY use functions from https://github.com/cole-trapnell-lab/pseudospace/blob/master/code/Pseudospace_support_functions.R####
 # Identify genes that are expressed in at least 50 of cells 
 expressed_genes.list <- list()
 expressed_genes.list[["steadystate"]] <- row.names(fData(monocle_BBC[Matrix::rowSums(Biobase::exprs(monocle_BBC) > 0) > 50 ,]))
@@ -118,122 +128,24 @@ for(alignment in names(cds.aligned.list)){
   
 }
 
-#plot genes
-to.plot <- c("Ahr" ,     "Anxa1" ,   "Anxa2" ,   "B2m",		
-             "Camp" , "Ccl9"  ,  "Ccr3"   ,  "Cd47"  ,   "Chil3"	,	
-             "Cxcr4" , "Ear1" ,    "Ear2"		,
-             "Ear6"  , "Elane" ,  "Epx"   ,  "Ffar2" ,   "Fgfr1"	,  "Gata1"  ,  "Gbp7"  ,
-             "Ifitm1" ,  "Ifitm2" ,  "Ifitm6"	, "Ifngr1"  ,  "Il17ra" ,  "Il1rl1"  ,
-             "Irf9"  ,   "Itga2"   , "Itga4"    ,  "Lcn2"  ,   "Ltb"    ,  "Ltf"	,  
-             "Lyz2"   , "Osm"   ,  "Prg2"  ,   "Prg3" , "Rara"  ,   "Rarg" ,
-             "Retnla"  , "Retnlg"  ,"S100a8" ,  "S100a9" , "Serpinb2"	,
-             "Tgm2"  ,   "Thbs1"  ,"Tuba1b"  , "Wnt11",    "Xbp1" )	
 
-compare_cell_types_in_pseudospace(cds.aligned.list[["steadystate to challenge"]][row.names(subset(fData(cds.aligned.list[["steadystate to challenge"]]), 
-                                                                                                  gene_short_name %in% c("Ahr",  "Anxa1","Anxa2","B2m","Camp"  ,   "Ccl9"   ,  "Ccr3"  ,   "Cd47" ))),], 
-                                  color_by="orig.ident", df=3, min_expr=0.1, cell_alpha = 0.05, line_size = 1, ncol = 2,
-                                  panel_order = c("Ahr",  "Anxa1","Anxa2","B2m", "Camp"  ,   "Ccl9"   ,  "Ccr3"  ,   "Cd47" )) + 
-  scale_color_manual(values = c("steadystate" = "grey86", "challenge" = "darkred", "bonemarrow"="#5BBCD6","bonemarrowCR"="#5BBCD6",
-                                "blood"="#F2AD00", "bloodCR"="#F2AD00", "colon"="#FF0000", "colonCR"="#FF0000"), name = "Treatment") +
-  #theme(legend.position="none", text=element_text(size=20)) +
-  ggsave("_aligned_pseudospace1.png", width = 9, height = 7)
-
-
-compare_cell_types_in_pseudospace(cds.aligned.list[["steadystate to challenge"]][row.names(subset(fData(cds.aligned.list[["steadystate to challenge"]]), 
-                                                                                                  gene_short_name %in% c( "Chil3" ,   "Cxcr4" ,  "Ear1" ,    "Ear2"  ,  "Ear6"   ,  "Elane"   , "Epx"   ,   "Ffar2" ))),], 
-                                  color_by="orig.ident", df=3, min_expr=0.1, cell_alpha = 0.05, line_size = 1, ncol = 2,
-                                  panel_order = c("Chil3" ,   "Cxcr4" ,  "Ear1" ,    "Ear2"  ,  "Ear6"   ,  "Elane"   , "Epx"   ,   "Ffar2")) + 
-  scale_color_manual(values = c("steadystate" = "grey86", "challenge" = "darkred", "bonemarrow"="#5BBCD6","bonemarrowCR"="#5BBCD6",
-                                "blood"="#F2AD00", "bloodCR"="#F2AD00", "colon"="#FF0000", "colonCR"="#FF0000"), name = "Treatment") +
-  #theme(legend.position="none", text=element_text(size=20)) +
-  ggsave("_aligned_pseudospace2.png", width = 9, height = 7)
-
-
-compare_cell_types_in_pseudospace(cds.aligned.list[["steadystate to challenge"]][row.names(subset(fData(cds.aligned.list[["steadystate to challenge"]]), 
-                                                                                                  gene_short_name %in% c("Fgfr1" ,   "Gata1" ,   "Gbp7"  ,   "Ifitm1"  ,"Ifitm2"   ,"Ifitm6"   ,"Ifngr1"   ,"Il17ra"))),], 
-                                  color_by="orig.ident", df=3, min_expr=0.1, cell_alpha = 0.05, line_size = 1, ncol = 2,
-                                  panel_order = c("Fgfr1" ,   "Gata1" ,   "Gbp7"  ,   "Ifitm1"  ,"Ifitm2"   ,"Ifitm6"   ,"Ifngr1"   ,"Il17ra" )) + 
-  scale_color_manual(values = c("steadystate" = "grey86", "challenge" = "darkred", "bonemarrow"="#5BBCD6","bonemarrowCR"="#5BBCD6",
-                                "blood"="#F2AD00", "bloodCR"="#F2AD00", "colon"="#FF0000", "colonCR"="#FF0000"), name = "Treatment") +
-  #theme(legend.position="none", text=element_text(size=20)) +
-  ggsave("_aligned_pseudospace3.png", width = 9, height = 7)
-
-
-compare_cell_types_in_pseudospace(cds.aligned.list[["steadystate to challenge"]][row.names(subset(fData(cds.aligned.list[["steadystate to challenge"]]), 
-                                                                                                  gene_short_name %in% c( "Il1rl1",   "Irf9" ,    "Itga2" ,   "Itga4"  ,  "Lcn2"  ,   "Ltb" , "Ltf"   ,   "Lyz2" ))),], 
-                                  color_by="orig.ident", df=3, min_expr=0.1, cell_alpha = 0.05, line_size = 1, ncol = 2,
-                                  panel_order = c( "Il1rl1",   "Irf9" ,    "Itga2" ,   "Itga4"  ,  "Lcn2"  ,   "Ltb" , "Ltf"   ,   "Lyz2"  )) + 
-  scale_color_manual(values = c("steadystate" = "grey86", "challenge" = "darkred", "bonemarrow"="#5BBCD6","bonemarrowCR"="#5BBCD6",
-                                "blood"="#F2AD00", "bloodCR"="#F2AD00", "colon"="#FF0000", "colonCR"="#FF0000"), name = "Treatment") +
-  #theme(legend.position="none", text=element_text(size=20)) +
-  ggsave("_aligned_pseudospace4.png", width = 9, height = 7)
-
-
-compare_cell_types_in_pseudospace(cds.aligned.list[["steadystate to challenge"]][row.names(subset(fData(cds.aligned.list[["steadystate to challenge"]]), 
-                                                                                                  gene_short_name %in% c( "Osm"  ,    "Prg2"  ,   "Prg3" ,    "Rara"   ,  "Rarg" ,    "Retnla",   "Retnlg"  , "S100a8"  ))),], 
-                                  color_by="orig.ident", df=3, min_expr=0.1, cell_alpha = 0.05, line_size = 1, ncol = 2,
-                                  panel_order = c( "Osm"  ,    "Prg2"  ,   "Prg3" ,    "Rara"   ,  "Rarg" ,    "Retnla",   "Retnlg"  , "S100a8"   )) + 
-  scale_color_manual(values = c("steadystate" = "grey86", "challenge" = "darkred", "bonemarrow"="#5BBCD6","bonemarrowCR"="#5BBCD6",
-                                "blood"="#F2AD00", "bloodCR"="#F2AD00", "colon"="#FF0000", "colonCR"="#FF0000"), name = "Treatment") +
-  #theme(legend.position="none", text=element_text(size=20)) +
-  ggsave("_aligned_pseudospace5.png", width = 9, height = 7)
-
-
-compare_cell_types_in_pseudospace(cds.aligned.list[["steadystate to challenge"]][row.names(subset(fData(cds.aligned.list[["steadystate to challenge"]]), 
-                                                                                                  gene_short_name %in% c( "S100a9" ,  "Serpinb2", "Tgm2"  ,   "Thbs1" ,   "Tuba1b" ,  "Wnt11" ,   "Xbp1"  ))),], 
-                                  color_by="orig.ident", df=3, min_expr=0.1, cell_alpha = 0.05, line_size = 1, ncol = 2,
-                                  panel_order = c( "S100a9" ,  "Serpinb2", "Tgm2"  ,   "Thbs1" ,   "Tuba1b" ,  "Wnt11" ,   "Xbp1" )) + 
-  scale_color_manual(values = c("steadystate" = "grey86", "challenge" = "darkred", "bonemarrow"="#5BBCD6","bonemarrowCR"="#5BBCD6",
-                                "blood"="#F2AD00", "bloodCR"="#F2AD00", "colon"="#FF0000", "colonCR"="#FF0000"), name = "Treatment") +
-  #theme(legend.position="none", text=element_text(size=20)) +
-  ggsave("_aligned_pseudospace6.png", width = 9, height = 7)
-
-
-
-compare_cell_types_in_pseudospace(cds.aligned.list[["steadystate to challenge"]][row.names(subset(fData(cds.aligned.list[["steadystate to challenge"]]), 
-                                                                                                  gene_short_name %in% c( "Ahr", "Camp", "B2m", "Cd47", "Chil3", "Ear1", "Ear2", "Ear6"))),], 
-                                  color_by="orig.ident", df=3, min_expr=0.1, cell_alpha = 0.05, line_size = 1, ncol = 2,
-                                  panel_order = c( "Ahr", "Camp", "B2m", "Cd47", "Chil3", "Ear1", "Ear2", "Ear6")) + 
-  scale_color_manual(values = c("steadystate" = "grey86", "challenge" = "darkred", "bonemarrow"="#5BBCD6","bonemarrowCR"="#5BBCD6",
-                                "blood"="#F2AD00", "bloodCR"="#F2AD00", "colon"="#FF0000", "colonCR"="#FF0000"), name = "Treatment") +
-  #theme(legend.position="none", text=element_text(size=20)) +
-  ggsave("_aligned_pseudospace_final_1.pdf", width = 9, height = 7)
-
-compare_cell_types_in_pseudospace(cds.aligned.list[["steadystate to challenge"]][row.names(subset(fData(cds.aligned.list[["steadystate to challenge"]]), 
-                                                                                                  gene_short_name %in% c(  "Epx", "Retnla", "Gbp7", "Ifngr1", "Irf9", "Lcn2", "Lyz2", "Ltf" ))),], 
-                                  color_by="orig.ident", df=3, min_expr=0.1, cell_alpha = 0.05, line_size = 1, ncol = 2,
-                                  panel_order = c(  "Epx", "Retnla", "Gbp7", "Ifngr1", "Irf9", "Lcn2", "Lyz2", "Ltf")) + 
-  scale_color_manual(values = c("steadystate" = "grey86", "challenge" = "darkred", "bonemarrow"="#5BBCD6","bonemarrowCR"="#5BBCD6",
-                                "blood"="#F2AD00", "bloodCR"="#F2AD00", "colon"="#FF0000", "colonCR"="#FF0000"), name = "Treatment") +
-  #theme(legend.position="none", text=element_text(size=20)) +
-  ggsave("_aligned_pseudospace_final_2.pdf", width = 9, height = 7)
-
-compare_cell_types_in_pseudospace(cds.aligned.list[["steadystate to challenge"]][row.names(subset(fData(cds.aligned.list[["steadystate to challenge"]]), 
-                                                                                                  gene_short_name %in% c(  "Prg2", "Prg3", "S100a8", "S100a9", "Xbp1", "Gata1"))),], 
-                                  color_by="orig.ident", df=3, min_expr=0.1, cell_alpha = 0.05, line_size = 1, ncol = 2,
-                                  panel_order = c(  "Prg2", "Prg3", "S100a8", "S100a9", "Xbp1", "Gata1")) + 
-  scale_color_manual(values = c("steadystate" = "grey86", "challenge" = "darkred", "bonemarrow"="#5BBCD6","bonemarrowCR"="#5BBCD6",
-                                "blood"="#F2AD00", "bloodCR"="#F2AD00", "colon"="#FF0000", "colonCR"="#FF0000"), name = "Treatment") +
-  #theme(legend.position="none", text=element_text(size=20)) +
-  ggsave("_aligned_pseudospace_final_3.pdf", width = 9, height = 5.25)
-
-
-# Identify genes that are differentially expressed across pseudospace as a function of treatment
-aligned.pseudospace.DEG.test.list <- list()
+# Identify genes that are differentially expressed across pseudotime as a function of treatment
+aligned.pseudotime.DEG.test.list <- list()
 
 for(alignment in names(cds.aligned.list)) {
   
-  aligned.pseudospace.DEG.test.list[[alignment]] <- differentialGeneTest(cds.aligned.list[[alignment]][expressed_genes], 
+  aligned.pseudotime.DEG.test.list[[alignment]] <- differentialGeneTest(cds.aligned.list[[alignment]][expressed_genes], 
                                                                          fullModelFormulaStr="~sm.ns(Pseudotime, df=3)*Cell.Type", 
                                                                          reducedModelFormulaStr="~sm.ns(Pseudotime, df=3) + Cell.Type", cores = 1)
   
 }
 
-diff_test_res <-aligned.pseudospace.DEG.test.list[[alignment]]
+
+diff_test_res <-aligned.pseudotime.DEG.test.list[[alignment]]
 sig_gene_names <- row.names(subset(diff_test_res, qval  <= 1e-10))
 View(diff_test_res[sig_gene_names,])
 
-compare_cell_types_in_pseudospace(cds.aligned.list[["steadystate to challenge"]][row.names(subset(fData(cds.aligned.list[["steadystate to challenge"]]), 
+compare_cell_types_in_pseudotime(cds.aligned.list[["steadystate to challenge"]][row.names(subset(fData(cds.aligned.list[["steadystate to challenge"]]), 
                                                                                                   gene_short_name %in% c("Thbs1","Ly6c2"   ,"Retnla"   ,"Retnlg"))),], 
                                   color_by="orig.ident", df=3, min_expr=0.1, cell_alpha = 0.05, line_size = 1, ncol = 2,
                                   panel_order = c("Thbs1"   ,"Ly6c2"   ,"Retnla"   ,"Retnlg")) + 
@@ -244,9 +156,9 @@ compare_cell_types_in_pseudospace(cds.aligned.list[["steadystate to challenge"]]
 
 Pseudospatial.aligned.sig.genes.list <- list()
 
-for(sample in names(aligned.pseudospace.DEG.test.list)){
+for(sample in names(aligned.pseudotime.DEG.test.list)){
   
-  Pseudospatial.aligned.sig.genes.list[[sample]] <- row.names(subset(aligned.pseudospace.DEG.test.list[[sample]], 
+  Pseudospatial.aligned.sig.genes.list[[sample]] <- row.names(subset(aligned.pseudotime.DEG.test.list[[sample]], 
                                                                      qval <= 1e-10))
   print(sample)
   print(length(Pseudospatial.aligned.sig.genes.list[[sample]]))
@@ -254,5 +166,33 @@ for(sample in names(aligned.pseudospace.DEG.test.list)){
 
 genes_of_interest <- Pseudospatial.aligned.sig.genes.list[[sample]]
 
-bonemarrowCR_markers <- FindMarkers(refquery, ident.1 = "bonemarrowCR", ident.2 = "bonemarrow", verbose = FALSE, only.pos = F)
+
+
+#plot selected genes
+compare_cell_types_in_pseudotime(cds.aligned.list[["steadystate to challenge"]][row.names(subset(fData(cds.aligned.list[["steadystate to challenge"]]), 
+                                                                                                  gene_short_name %in% c( "Ahr", "Camp", "B2m", "Cd47", "Chil3", "Ear1", "Ear2", "Ear6"))),], 
+                                  color_by="orig.ident", df=3, min_expr=0.1, cell_alpha = 0.05, line_size = 1, ncol = 2,
+                                  panel_order = c( "Ahr", "Camp", "B2m", "Cd47", "Chil3", "Ear1", "Ear2", "Ear6")) + 
+  scale_color_manual(values = c("steadystate" = "grey86", "challenge" = "darkred", "bonemarrow"="#5BBCD6","bonemarrowCR"="#5BBCD6",
+                                "blood"="#F2AD00", "bloodCR"="#F2AD00", "colon"="#FF0000", "colonCR"="#FF0000"), name = "Treatment") +
+  #theme(legend.position="none", text=element_text(size=20)) +
+  ggsave("_aligned_pseudotime_final_1.pdf", width = 9, height = 7)
+
+compare_cell_types_in_pseudotime(cds.aligned.list[["steadystate to challenge"]][row.names(subset(fData(cds.aligned.list[["steadystate to challenge"]]), 
+                                                                                                  gene_short_name %in% c(  "Epx", "Retnla", "Gbp7", "Ifngr1", "Irf9", "Lcn2", "Lyz2", "Ltf" ))),], 
+                                  color_by="orig.ident", df=3, min_expr=0.1, cell_alpha = 0.05, line_size = 1, ncol = 2,
+                                  panel_order = c(  "Epx", "Retnla", "Gbp7", "Ifngr1", "Irf9", "Lcn2", "Lyz2", "Ltf")) + 
+  scale_color_manual(values = c("steadystate" = "grey86", "challenge" = "darkred", "bonemarrow"="#5BBCD6","bonemarrowCR"="#5BBCD6",
+                                "blood"="#F2AD00", "bloodCR"="#F2AD00", "colon"="#FF0000", "colonCR"="#FF0000"), name = "Treatment") +
+  #theme(legend.position="none", text=element_text(size=20)) +
+  ggsave("_aligned_pseudotime_final_2.pdf", width = 9, height = 7)
+
+compare_cell_types_in_pseudotime(cds.aligned.list[["steadystate to challenge"]][row.names(subset(fData(cds.aligned.list[["steadystate to challenge"]]), 
+                                                                                                  gene_short_name %in% c(  "Prg2", "Prg3", "S100a8", "S100a9", "Xbp1", "Gata1"))),], 
+                                  color_by="orig.ident", df=3, min_expr=0.1, cell_alpha = 0.05, line_size = 1, ncol = 2,
+                                  panel_order = c(  "Prg2", "Prg3", "S100a8", "S100a9", "Xbp1", "Gata1")) + 
+  scale_color_manual(values = c("steadystate" = "grey86", "challenge" = "darkred", "bonemarrow"="#5BBCD6","bonemarrowCR"="#5BBCD6",
+                                "blood"="#F2AD00", "bloodCR"="#F2AD00", "colon"="#FF0000", "colonCR"="#FF0000"), name = "Treatment") +
+  #theme(legend.position="none", text=element_text(size=20)) +
+  ggsave("_aligned_pseudotime_final_3.pdf", width = 9, height = 5.25)
 
