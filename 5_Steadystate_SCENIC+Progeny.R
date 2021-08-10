@@ -21,7 +21,6 @@ packageVersion("SCENIC")
 
 dbFiles <- c("https://resources.aertslab.org/cistarget/databases/mus_musculus/mm9/refseq_r45/mc9nr/gene_based/mm9-500bp-upstream-7species.mc9nr.feather",
              "https://resources.aertslab.org/cistarget/databases/mus_musculus/mm9/refseq_r45/mc9nr/gene_based/mm9-tss-centered-10kb-7species.mc9nr.feather")
-# mc9nr: Motif collection version 9: 24k motifs
 
 options(timeout = max(300, getOption("timeout")))
 
@@ -44,6 +43,7 @@ saveRDS(cellInfo, file="int/cellInfo.Rds")
 
 Idents(eosinophils_steadystate) <- "seurat_clusters"
 DimPlot(eosinophils_steadystate, cols = rev(col_vector[1:5]))
+
 # Color to assign to the variables (same format as for NMF::aheatmap)
 colVars <- list(CellType=c("eosinophil progenitors"="#5BBCD6", 
                            "immature eosinophils"="#F98400", 
@@ -127,7 +127,7 @@ rownames(aucell_regulonAUC.t) <- gsub("[.]", "-", rownames(aucell_regulonAUC.t))
 
 steadystate.scenic <- eosinophils_steadystate
 steadystate.scenic@meta.data <- cbind(steadystate.scenic@meta.data, aucell_regulonAUC.t[rownames(steadystate.scenic@meta.data),])
-pdf("steadystate_regulon_activity.pdf")
+pdf("Figures/steadystate_regulon_activity.pdf")
 DimPlot(steadystate.scenic, reduction = "umap")
 
 #Regulon scores heatmap
@@ -151,7 +151,6 @@ pheatmap(data_subset_norm)
 cluster.col <- data.frame(wt.scenic@active.ident, row.names = names(wt.scenic@active.ident))
 colnames(cluster.col) <- "Seurat_cluster"
 pheatmap(data_subset_norm, cluster_rows = T,cluster_cols = F, annotation_col = cluster.col, show_colnames = F)
-
 pheatmap(regulon.scores.scaled, cluster_rows = T,cluster_cols = F, annotation_col = cluster.col, show_colnames = F, fontsize_row=5)
 
 #Binary regulon activity
@@ -189,19 +188,17 @@ binary.regulon.activity <- binaryRegulonActivity
 colnames(binary.regulon.activity) <- gsub("[.]", "-", colnames(binary.regulon.activity))
 binary.regulon.activity <- binary.regulon.activity[,names(cells.ord.cluster)]
 wt.binary.regulon.activity <- binary.regulon.activity
-save(wt.binary.regulon.activity, file= "/Users/ati/Documents/Projects/10X_Gastruloids/results/WT/wt/wt_scenic_binaryRegulonActivity_table.RData")
+save(wt.binary.regulon.activity, file= "/scenic_binaryRegulonActivity_table.RData")
 binary.regulon.activity <- binary.regulon.activity[which(rowSums(binary.regulon.activity) > 80),]
 
 cluster.col <- data.frame(steadystate.scenic@active.ident, row.names = names(steadystate.scenic@active.ident))
 colnames(cluster.col) <- "Seurat_cluster"
-pdf("/Users/ati/Documents/Projects/10X_Gastruloids/results/wt/wt/wt_scenic_binaryRegulonActivity.pdf")
+pdf("scenic_binaryRegulonActivity.pdf")
 pheatmap(binary.regulon.activity, cluster_rows = T,cluster_cols = T, annotation_col = cluster.col, show_colnames = F,  fontsize_row=7)
 dev.off()
 
-wt.scenic <- wt
 steadystate.scenic@meta.data <- cbind(steadystate.scenic@meta.data, t(binary.regulon.activity)[rownames(steadystate.scenic@meta.data),])
 library(Seurat)
-pdf("/Users/ati/Documents/Projects/10X_Gastruloids/results/wt/wt/wt_regulon_activity_on_Umap.pdf")
 DimPlot(steadystate.scenic, reduction = "umap")
 FeaturePlot(steadystate.scenic, reduction = "umap", features = c("E2f1 (1388g)","Nfe2 (109g)", "Mafg_extended (112g)", "Xbp1_extended (15g)", "Batf3_extended (12g)",
                                                                  "Meis1_extended (19g)",
@@ -233,7 +230,6 @@ steadystate.exp.mat <- steadystate.scenic@assays$RNA@data
 TFs.exp.mat <- steadystate.exp.mat[TFs,names(cells.ord.cluster)]
 TFs.exp.mat <- as.numeric(TFs.exp.mat)
 pheatmap(TFs.exp.mat, cluster_rows = T,cluster_cols = F, annotation_col = cluster.col, show_colnames = F)
-
 
 #Average Regulon Activity 
 library(grid)
@@ -282,7 +278,7 @@ plotRSS_oneSet(rss, setName = "eosinophil progenitors")
 # load everything from SCENIC run
 GENIE3_linkList <- readRDS("int/1.4_GENIE3_linkList.Rds")
 tfModules <- readRDS("int/1.6_tfModules_asDF.Rds")
-tfModules.MotifEnrichmet <- readRDS("/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/SCENIC/int/2.1_tfModules_forMotifEnrichmet.Rds") # THIS contains top50 targets of each TF
+tfModules.MotifEnrichmet <- readRDS("int/2.1_tfModules_forMotifEnrichmet.Rds") # THIS contains top50 targets of each TF
 View(tfModules.MotifEnrichmet)
 
 motif_AUC <- readRDS("int/2.2_motifs_AUC.Rds")
