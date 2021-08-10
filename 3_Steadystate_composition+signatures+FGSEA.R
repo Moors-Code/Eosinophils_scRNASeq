@@ -1,5 +1,5 @@
 source('Packages_functions.R', echo=TRUE)
-readRDS(eosinophil_pure)
+readRDS("eosinophil_pure.rds")
 
 #####SUBSET STEADYSTATE ORGANS#####
 DimPlot(eosinophil_pure)
@@ -115,7 +115,7 @@ ggarrange(a, b, c, d, e, f, ncol = 3, nrow = 2)+ ggsave("Figures/organUMAP.pdf",
 markers_steadystate <- FindAllMarkers(object = eosinophils_steadystate, only.pos = T, min.pct = 0.25, logfc.threshold = 0.25)
 View(markers_steadystate %>% group_by(cluster) %>% top_n(n = 20, wt = avg_log2FC))
 top200 <- markers_steadystate %>% group_by(cluster) %>% top_n(n = 200, wt = avg_log2FC)
-write.csv(top200,"/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Steadystate/markers_steadystate.csv", row.names = TRUE)
+write.csv(top200,"markers_steadystate.csv", row.names = TRUE)
 
 #markers density
 a<-plot_density(eosinophils_steadystate, "Mki67", pal = "magma")
@@ -140,12 +140,12 @@ DotPlot(eosinophils_steadystate, features = final.markers , dot.scale = 10) + Ro
 
 ###SIGNATURES######
 #Cell cycle score
-eosinophils_steadystate$seurat_clusters <- factor(x = eosinophils_steadystate$seurat_clusters, levels = c("eosinophil progenitors", "immature eosinophils", "circulating eosinophils", "basal eosinophils", "intestinal eosinophils"))
+eosinophils_steadystate$seurat_clusters <- factor(x = eosinophils_steadystate$seurat_clusters, levels = c("eosinophil progenitors", "immature eosinophils", "circulating eosinophils", "basal eosinophils", "active eosinophils"))
 DoHeatmap(eosinophils_steadystate, features = c("Mki67", "Cdk1", "Pcna", "Cdt1", "Fbxo5", "Spc24", "Ranbp1", "Rad21", 
                                                 "Nusap1", "Cdc20", "Pmf1", "Cdc45", "Cenpf", "Smc4", "Tpx2", "Cdk2",
                                                 "E2f8", "Top2a", "Stmn1","Nuf2"),    label=F, draw.lines	= T,    group.by = "seurat_clusters",
           lines.width = 100, group.colors	= rev(col_vector[1:5]))+  scale_fill_gradientn(colors = pal,  na.value = "white") + theme(axis.text.y = element_text(face = "italic", color="black") ) +
-  ggsave("progenitors_heatmap.pdf", width = 7, height = 2.8)
+  ggsave("Figures/progenitors_heatmap.pdf", width = 7, height = 2.8)
 
 eosinophils_steadystate$seurat_clusters <- factor(x = eosinophils_steadystate$seurat_clusters, levels = c("active eosinophils","basal eosinophils", "circulating eosinophils","immature eosinophils",  "eosinophil progenitors"))
 
@@ -334,5 +334,5 @@ myBreaks = c(seq(min(merged4), 0,
                       length.out=floor(paletteLength/2)))
 pheatmap(merged4, cluster_cols = F, cluster_rows = T, border_color="grey", 
          cellwidth =30, col=myColor, breaks =myBreaks, main = "Biological process enrichment", 
-         angle_col = 45, fontsize=14, fontsize_row = 10, filename = "GO.pdf")
+         angle_col = 45, fontsize=14, fontsize_row = 10, filename = "Figures/GO.pdf")
 
