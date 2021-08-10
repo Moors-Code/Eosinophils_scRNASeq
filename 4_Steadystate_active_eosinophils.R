@@ -1,7 +1,7 @@
-####INTESTINAL PERCENTAGE####
+####ACTIVE PERCENTAGE####
 d <- rbind(c[5,], colSums(c[c(1,2,3,4),]))
 d
-pdf(file="Figures/IntestinalPercentage.pdf")
+pdf(file="Figures/ActivePercentage.pdf")
 barplot(d, horiz=FALSE,
         legend = T, border=NA,
         args.legend=list(bty = "n",x=180, cex=.8),
@@ -10,9 +10,9 @@ barplot(d, horiz=FALSE,
 dev.off()
 
 #hypergeometric test to test significance of enrichment in colon
-set1        <- 1430 #total intestinal eosinophils 
+set1        <- 1430 #total active eosinophils 
 set2        <- 1291 #cells in colon
-overlap     <- 977 #intestinal eos in colon 
+overlap     <- 977 #active eos in colon 
 allterms    <- 1430+1291 #union
 phyper(overlap, set1, allterms-set1, set2, lower.tail=F) #1.255248e-121
 
