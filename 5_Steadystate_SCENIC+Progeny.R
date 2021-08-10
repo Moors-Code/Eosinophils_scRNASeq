@@ -148,7 +148,6 @@ cal_z_score <- function(x){
 data_subset_norm <- t(apply(regulon.scores, 1, cal_z_score))
 pheatmap(data_subset_norm)
 
-cluster.col <- data.frame(wt.scenic@active.ident, row.names = names(wt.scenic@active.ident))
 colnames(cluster.col) <- "Seurat_cluster"
 pheatmap(data_subset_norm, cluster_rows = T,cluster_cols = F, annotation_col = cluster.col, show_colnames = F)
 pheatmap(regulon.scores.scaled, cluster_rows = T,cluster_cols = F, annotation_col = cluster.col, show_colnames = F, fontsize_row=5)
@@ -187,8 +186,8 @@ cells.ord.cluster<- cells.ord.cluster[order(cells.ord.cluster)]
 binary.regulon.activity <- binaryRegulonActivity
 colnames(binary.regulon.activity) <- gsub("[.]", "-", colnames(binary.regulon.activity))
 binary.regulon.activity <- binary.regulon.activity[,names(cells.ord.cluster)]
-wt.binary.regulon.activity <- binary.regulon.activity
-save(wt.binary.regulon.activity, file= "/scenic_binaryRegulonActivity_table.RData")
+steadystate.binary.regulon.activity <- binary.regulon.activity
+save(steadystate.binary.regulon.activity, file= "/scenic_binaryRegulonActivity_table.RData")
 binary.regulon.activity <- binary.regulon.activity[which(rowSums(binary.regulon.activity) > 80),]
 
 cluster.col <- data.frame(steadystate.scenic@active.ident, row.names = names(steadystate.scenic@active.ident))
