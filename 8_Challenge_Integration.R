@@ -1,4 +1,4 @@
-source('~/NAS/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Packages_functions.R', echo=TRUE)
+source('Packages_functions.R', echo=TRUE)
 
 ###INTEGRATION####
 Idents(eosinophil_pure) <- "seurat_clusters"
@@ -61,8 +61,8 @@ DimPlot(refquery, reduction = "umap", group.by = "seurat_clusters", label=T)
 current.cluster.ids <- c(0, 1, 2, 3, 4, 5,6,7,8,9,10,11,12,13,14,15,16)
 new.cluster.ids <-  c("basal eosinophils", 
                       "basal eosinophils", 
-                      "intestinal eosinophils", 
-                      "intestinal eosinophils", 
+                      "active eosinophils", 
+                      "active eosinophils", 
                       "circulating eosinophils",
                       "immature eosinophils", 
                       "immature eosinophils", 
@@ -78,7 +78,7 @@ new.cluster.ids <-  c("basal eosinophils",
                       "eosinophil progenitors")
 refquery@meta.data$seurat_clusters <- plyr::mapvalues(x = refquery@meta.data$seurat_clusters, from = current.cluster.ids, to = new.cluster.ids)
 Idents(refquery) <- "seurat_clusters"
-refquery$seurat_clusters <- factor(x = refquery$seurat_clusters, levels = rev(c("intestinal eosinophils", "basal eosinophils","circulating eosinophils","immature eosinophils",  "eosinophil progenitors")))
+refquery$seurat_clusters <- factor(x = refquery$seurat_clusters, levels = rev(c("active eosinophils", "basal eosinophils","circulating eosinophils","immature eosinophils",  "eosinophil progenitors")))
 DimPlot(refquery, reduction = "umap", pt.size = .5, label=F, cols = rev(col_vector[1:5]))
 markers <- FindAllMarkers(refquery, min.pct = 0.25, logfc.threshold = 0.25)
 VlnPlot(eos_challenge, features = "predicted.id.score", group.by = "orig.ident")
@@ -121,7 +121,7 @@ a <- RidgePlot(colononly, features="CC2", group.by = "seurat_clusters", rev(col_
 
 colonCRonly <- subset(refquery, idents="colonCR")
 Idents(colonCRonly) <- "seurat_clusters"
-colonCRonly <- subset(colonCRonly, idents=c("immature eosinophils", "circulating eosinophils", "basal eosinophils", "intestinal eosinophils"))
+colonCRonly <- subset(colonCRonly, idents=c("immature eosinophils", "circulating eosinophils", "basal eosinophils", "active eosinophils"))
 colonCRonly <- AddModuleScore(colonCRonly, features = cc.genes, name = "CC")
 names(x = colonCRonly[[]])
 b <- RidgePlot(colonCRonly, features="CC2", group.by = "seurat_clusters", rev(col_vector[1:4])) +
@@ -169,7 +169,7 @@ c7 <- (b[c(1:6,9:10),8]/totalcellsperorgan[c(1:6,9:10)])*100
 
 c <- rbind(c0,c1,c2,c3,c4)
 colSums(c)
-rownames(c) =  rev(c("intestinal eosinophils","basal eosinophils", "circulating eosinophils","immature eosinophils",  "eosinophil progenitors"))
+rownames(c) =  rev(c("active eosinophils","basal eosinophils", "circulating eosinophils","immature eosinophils",  "eosinophil progenitors"))
 c
 
 par(mar=c(16,8,2,14))
@@ -183,16 +183,16 @@ barplot(c, horiz=TRUE,
 dev.off()
 
 #hypergeometric test to test significance of enrichment in colon CR
-set1        <- 1030+179 #total intestinal eosinophils colon + colon CR
+set1        <- 1030+179 #total active eosinophils colon + colon CR
 set2        <- 207 #cells in colonCR
-overlap     <- 179 #intestinal eos in colonCR
+overlap     <- 179 #active eos in colonCR
 allterms    <- 1030+179+207 #union
 phyper(overlap, set1, allterms-set1, set2, lower.tail=F) #7.365844e-25
 
 #hypergeometric test to test significance of enrichment in stomach HP
-set1        <- 73+284 #total intestinal eosinophils stomach + stomach HP
+set1        <- 73+284 #total active eosinophils stomach + stomach HP
 set2        <- 359 #cells in stomach HP
-overlap     <- 284 #intestinal eos in colonCR
+overlap     <- 284 #active eos in colonCR
 allterms    <- 73+284+359 #union
 phyper(overlap, set1, allterms-set1, set2, lower.tail=F) #7.365844e-25
 
@@ -255,21 +255,21 @@ ggarrange( b, b1, c, c1, d, d1, e, e1, ncol = 4, nrow = 2)+ ggsave("Figures/cond
 
 
 ###DIFFERENTIAL GENE EXPRESSION####
-#intestinal cluster only
+#active cluster only
 DimPlot(refquery, group.by = "seurat_clusters")
 Idents(refquery) <- "seurat_clusters"
-intestinal <- subset(refquery, ident= "intestinal eosinophils")
-Idents(intestinal) <- "orig.ident"
-DimPlot(intestinal, group.by = "orig.ident")
-intestinal <- subset(intestinal, ident= c("colon", "stomach", "stomachHP",  "colonCR"))
-Idents(intestinal) <- "orig.ident"
-stomachHP_markers <- FindMarkers(intestinal, ident.1 = "stomachHP", ident.2 = "stomach", verbose = FALSE, only.pos = F)
+active <- subset(refquery, ident= "active eosinophils")
+Idents(active) <- "orig.ident"
+DimPlot(active, group.by = "orig.ident")
+active <- subset(active, ident= c("colon", "stomach", "stomachHP",  "colonCR"))
+Idents(active) <- "orig.ident"
+stomachHP_markers <- FindMarkers(active, ident.1 = "stomachHP", ident.2 = "stomach", verbose = FALSE, only.pos = F)
 write.csv(stomachHP_markers,"/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Challenge/stomachHP_markers.csv", row.names = TRUE)
 sig_stomachHP_markers <- stomachHP_markers %>% filter(p_val_adj <0.05)
 
 View(stomachHP_markers)
 
-colonCR_markers <- FindMarkers(intestinal, ident.1 = "colonCR", ident.2 = "colon", verbose = FALSE, only.pos = F)
+colonCR_markers <- FindMarkers(active, ident.1 = "colonCR", ident.2 = "colon", verbose = FALSE, only.pos = F)
 write.csv(colonCR_markers,"/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Challenge/colonCR_markers.csv", row.names = TRUE)
 sig_colonCR_markers <-colonCR_markers %>% filter(p_val_adj <0.05)
 
@@ -310,34 +310,16 @@ dev.off()
 
 
 ####SIGNATURES####
-intestinal_challenge <- subset(intestinal, idents=c("stomach", "stomachHP", "colon", "colonCR"))
-intestinal_challenge$orig.ident <- factor(x = intestinal_challenge$orig.ident , levels = c("colon", "colonCR","stomach", "stomachHP"))
-Idents(intestinal_challenge) <-"orig.ident"
-
-#plot1 <- DotPlot(intestinal_challenge, features = selected.markers , dot.scale = 10) + RotatedAxis()+ 
-#  theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
-#  scale_colour_gradientn(colours = pal)+ theme(legend.position="right")+ labs(title = "selected markers", y = "", x="")
-
-#plot2 <- DotPlot(intestinal_challenge, features = selected.markers.2 , dot.scale = 10) + RotatedAxis()+ 
-#  theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
-#  scale_colour_gradientn(colours = pal)+ theme(legend.position="right")+ labs(title = "selected markers", y = "", x="")
-
-#plot3 <- DotPlot(intestinal_challenge, features = cytokines , dot.scale = 10) + RotatedAxis() + 
-#  theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
-#  scale_colour_gradientn(colours = pal)+ theme(legend.position="right")+ labs(title = "cytokines", y = "", x="")
-
-#plot4 <- DotPlot(intestinal_challenge, features = chemokines , dot.scale = 10) + RotatedAxis() +
-#  theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
-#  scale_colour_gradientn(colours = pal)+ theme(legend.position="right")  + labs(title = "chemokines", y = "", x="")
-
-#ggarrange(plot1, plot2, plot3, plot4, ncol = 1, nrow = 4)
+active_challenge <- subset(active, idents=c("stomach", "stomachHP", "colon", "colonCR"))
+active_challenge$orig.ident <- factor(x = active_challenge$orig.ident , levels = c("colon", "colonCR","stomach", "stomachHP"))
+Idents(active_challenge) <-"orig.ident"
 
 #NFKB
 #Nfkb_list <- list(c("Nfkb1", "Nfkbib", "Nfkbia", "Nfkbie", "Nfkb2", "Nfkbiz",  "Rela", "Relb"))
-#intestinal_challenge <-AddModuleScore(intestinal_challenge, features= Nfkb_list,name = "Nfkb")
-#names(x = intestinal_challenge[[]])
+#active_challenge <-AddModuleScore(active_challenge, features= Nfkb_list,name = "Nfkb")
+#names(x = active_challenge[[]])
 
-#VlnPlot(intestinal_challenge, features="Nfkb1", group.by = "orig.ident", col_vector, pt.size = 0) +  theme_classic() + 
+#VlnPlot(active_challenge, features="Nfkb1", group.by = "orig.ident", col_vector, pt.size = 0) +  theme_classic() + 
 #  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
 #  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+
 #  labs(title = " Nfkb activity", x="", y="Expression") + theme(legend.position="right") +  
@@ -346,9 +328,9 @@ Idents(intestinal_challenge) <-"orig.ident"
 #  ggsave("Nfkb_activity_violin.pdf", width = 8, height = 4)
 
 #Regulatory_list <-  list(c("Icosl", "Cd274", "Cd80", "Cd9"))
-#intestinal_challenge <-AddModuleScore(intestinal_challenge, features= Regulatory_list,name = "Regulatory")
-#names(x = intestinal_challenge[[]])
-#VlnPlot(intestinal_challenge, features="Regulatory1", group.by = "orig.ident", col_vector, pt.size = 0) +  theme_classic() + 
+#active_challenge <-AddModuleScore(active_challenge, features= Regulatory_list,name = "Regulatory")
+#names(x = active_challenge[[]])
+#VlnPlot(active_challenge, features="Regulatory1", group.by = "orig.ident", col_vector, pt.size = 0) +  theme_classic() + 
 #  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
 #  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+
 #  labs(title = " Regulatory score", y = "Expression", x="") + theme(legend.position="right") +  
@@ -358,10 +340,10 @@ Idents(intestinal_challenge) <-"orig.ident"
 
 #granules
 Granules_synthesis_list <-   list(c("Prg2", "Prg3",  "Epx", "Ear6", "Ear1", "Ear2"))
-intestinal_challenge <-AddModuleScore(intestinal_challenge, features= Granules_synthesis_list,name = "Granules")
-names(x = intestinal_challenge[[]])
+active_challenge <-AddModuleScore(active_challenge, features= Granules_synthesis_list,name = "Granules")
+names(x = active_challenge[[]])
 
-VlnPlot(intestinal_challenge, features="Granules1", group.by = "orig.ident", cols= c("grey", "red", "grey16", "darkred"), pt.size = 0) +  theme_classic() + 
+VlnPlot(active_challenge, features="Granules1", group.by = "orig.ident", cols= c("grey", "red", "grey16", "darkred"), pt.size = 0) +  theme_classic() + 
   theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+
   labs(Y = " Granule protein expression", title = " ", x="") + theme(legend.position="right") +  
@@ -375,8 +357,8 @@ wilcox.test(eos_stomachHP$Granules1, eos_stomach$Granules1, alternative = "two.s
 #antigen processing
 Antigen_processing <- list(c("H2-D1", "H2-Q7", "H2-K1", "H2-T23","H2-Q4","Tap1","Tapbp","B2m", "Psmb8", "Psme1",
                              "Psmb9", "Calr", "Psmb10", "Ncf1", "Fcer1g"))
-intestinal_challenge <-AddModuleScore(intestinal_challenge, features= Antigen_processing, name = "Antigen_processing")
-VlnPlot(intestinal_challenge, features="Antigen_processing1", group.by = "orig.ident", cols= c("grey", "red", "grey16", "darkred"), pt.size = 0) +  theme_classic() + 
+active_challenge <-AddModuleScore(active_challenge, features= Antigen_processing, name = "Antigen_processing")
+VlnPlot(active_challenge, features="Antigen_processing1", group.by = "orig.ident", cols= c("grey", "red", "grey16", "darkred"), pt.size = 0) +  theme_classic() + 
   theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+ 
   labs(y = "Antigen processing signature", title = "", x="") + theme(legend.position="right") +  
@@ -389,10 +371,10 @@ wilcox.test(eos_stomachHP$Antigen_processing1, eos_stomach$Antigen_processing1, 
 
 #ifng
 IFNg_regulated <- list(c("Irgm1", "Camp", "Adam17", "Serpine1", "H2-D1", "H2-T23", "H2-Q7"))
-intestinal_challenge <-AddModuleScore(intestinal_challenge, features= IFNg_regulated,name = "IFNg_regulated")
-names(x = intestinal_challenge[[]])
+active_challenge <-AddModuleScore(active_challenge, features= IFNg_regulated,name = "IFNg_regulated")
+names(x = active_challenge[[]])
 
-VlnPlot(intestinal_challenge, features="IFNg_regulated1", group.by = "orig.ident", cols= c("grey", "red", "grey16", "darkred"), pt.size = 0) +  theme_classic() + 
+VlnPlot(active_challenge, features="IFNg_regulated1", group.by = "orig.ident", cols= c("grey", "red", "grey16", "darkred"), pt.size = 0) +  theme_classic() + 
   theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+ 
   labs(title = "", y = "IFNg-regulated antimicrobial signature", x="") + theme(legend.position="right") +  
@@ -406,10 +388,10 @@ wilcox.test(eos_stomachHP$IFNg_regulated1, eos_stomach$IFNg_regulated1, alternat
 IFNg_signature <- list(c("Ccl9", "Cxcl9", "Cxcl10", "Cd274", "Gbp2", "Irf1", "H2-D1", "H2-Q4", "H2-Q7", "H2-K1", 
                          "Gbp7", "Stat1", "Irgm1", "B2m", "Irf9", "Ifitm3", "H2-T23", "Icam1", "Jak2", "Irf2", "Ifngr2"))
 
-intestinal_challenge <-AddModuleScore(intestinal_challenge, features= IFNg_signature,name = "IFNg_signature")
-names(x = intestinal_challenge[[]])
+active_challenge <-AddModuleScore(active_challenge, features= IFNg_signature,name = "IFNg_signature")
+names(x = active_challenge[[]])
 
-VlnPlot(intestinal_challenge, features="IFNg_signature1", group.by = "orig.ident", cols= c("grey", "red", "grey16", "darkred"), pt.size = 0) +  theme_classic() + 
+VlnPlot(active_challenge, features="IFNg_signature1", group.by = "orig.ident", cols= c("grey", "red", "grey16", "darkred"), pt.size = 0) +  theme_classic() + 
   theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+ 
   labs(title = "", y = "IFNg score", x="") + theme(legend.position="right") +  
@@ -420,27 +402,27 @@ wilcox.test(eos_colonCR$IFNg_signature1, eos_colon$IFNg_signature1, alternative 
 wilcox.test(eos_stomachHP$IFNg_signature1, eos_stomach$IFNg_signature1, alternative = "two.sided") #p-value < 2.2e-16
 
 #antimicrobial peptides
-antimicrobial_data <- AverageExpression(intestinal_challenge, features = c("S100a8", "S100a9", "Gbp2", "Prg2", "Epx", "Ear1", "Ear2", "Ear6", "Gbp7", "Ltf", 
+antimicrobial_data <- AverageExpression(active_challenge, features = c("S100a8", "S100a9", "Gbp2", "Prg2", "Epx", "Ear1", "Ear2", "Ear6", "Gbp7", "Ltf", 
                                                                               "Lcn2", "Lyz2", "Irgm1", "Camp", "Adam17", "Serpine1", "H2-D1", "H2-T23", "H2-Q7"))
 
 antimicrobial <- list(c("S100a8", "S100a9", "Gbp2", "Prg2", "Epx", "Ear1", "Ear2", "Ear6", "Gbp7", "Ltf", 
                         "Lcn2", "Lyz2", "Irgm1", "Camp", "Adam17", "Serpine1", "H2-D1", "H2-T23", "H2-Q7"))
-intestinal_challenge <-AddModuleScore(intestinal_challenge, features= antimicrobial,name = "antimicrobial")
-names(x = intestinal_challenge[[]])
-VlnPlot(intestinal_challenge, features="antimicrobial1", group.by = "orig.ident", cols= c("grey", "red", "grey16", "darkred"), pt.size = 0) +  theme_classic() + 
+active_challenge <-AddModuleScore(active_challenge, features= antimicrobial,name = "antimicrobial")
+names(x = active_challenge[[]])
+VlnPlot(active_challenge, features="antimicrobial1", group.by = "orig.ident", cols= c("grey", "red", "grey16", "darkred"), pt.size = 0) +  theme_classic() + 
   theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+ 
   labs(title = "", y = "Antimicrobial signature", x="") + theme(legend.position="right") +  
   stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
   ggsave("Figures/Antimicrobial.pdf", width = 8, height = 6)
 
-Idents(intestinal_challenge) <- "orig.ident"
-eos_colon <- subset(intestinal_challenge, idents = c("colon"))
-eos_colonCR <- subset(intestinal_challenge, idents = c("colonCR"))
+Idents(active_challenge) <- "orig.ident"
+eos_colon <- subset(active_challenge, idents = c("colon"))
+eos_colonCR <- subset(active_challenge, idents = c("colonCR"))
 wilcox.test(eos_colonCR$antimicrobial1, eos_colon$antimicrobial1, alternative = "two.sided") #p-value < 2.2e-16
 
-eos_stomach <- subset(intestinal_challenge, idents = c("stomach"))
-eos_stomachHP <- subset(intestinal_challenge, idents = c("stomachHP"))
+eos_stomach <- subset(active_challenge, idents = c("stomach"))
+eos_stomachHP <- subset(active_challenge, idents = c("stomachHP"))
 wilcox.test(eos_stomachHP$antimicrobial1, eos_stomach$antimicrobial1, alternative = "two.sided") #p-value < 2.2e-16
 
 pheatmap(antimicrobial_data$RNA, scale = 'row', cluster_rows = T, cluster_cols = F, border_color="white", 
@@ -450,10 +432,10 @@ pheatmap(antimicrobial_data$RNA, scale = 'row', cluster_rows = T, cluster_cols =
 
 
 ###APOPTOSIS####
-Idents(intestinal_challenge) <- "orig.ident"
+Idents(active_challenge) <- "orig.ident"
 apoptosis.score <- list(c(BP[["GOBP_APOPTOTIC_PROCESS"]]))
-intestinal_challenge <- AddModuleScore(intestinal_challenge, features= apoptosis.score,name = "apoptosis.score")
-VlnPlot(intestinal_challenge, features="apoptosis.score1", group.by = "orig.ident",cols= c("grey", "red", "grey16", "darkred"), pt.size = 0) +  theme_classic() + 
+active_challenge <- AddModuleScore(active_challenge, features= apoptosis.score,name = "apoptosis.score")
+VlnPlot(active_challenge, features="apoptosis.score1", group.by = "orig.ident",cols= c("grey", "red", "grey16", "darkred"), pt.size = 0) +  theme_classic() + 
   theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
   theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+
   labs(title = "", y = "Apoptosis score ", x="") + theme(legend.position="right") +  
