@@ -1,13 +1,4 @@
-library(devtools)
-library(Seurat)
-library(BiocManager)
-library(dplyr)
-library(ggplot2)
-library(ggraph)
-library(monocle)
-library(viridis)
-
-###EXPORT MONOCLE INPUT FROM SEURAT (run in R4####
+###EXPORT MONOCLE INPUT FROM SEURAT (run in R4)####
 data <- as(as.matrix(eosinophils_steadystate@assays$RNA@data), 'sparseMatrix') 
 save(data,file="/Monocle/data.Rdata")
 
@@ -26,6 +17,15 @@ variablefeatures <- eosinophils_steadystate@assays$RNA@var.features
 save(variablefeatures, file="/Monocle/variablefeatures.Rdata")
 
 #####MONOCLE (run in R studio 3.6.1)#####
+library(devtools)
+library(Seurat)
+library(BiocManager)
+library(dplyr)
+library(ggplot2)
+library(ggraph)
+library(monocle)
+library(viridis)
+
 monocle_ss <- newCellDataSet(data,
                              phenoData = pd,
                              featureData = fd,
