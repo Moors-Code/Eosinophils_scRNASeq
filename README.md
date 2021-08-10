@@ -5,4 +5,4 @@ regulatory and bactericidal properties", from the Arnold and Moor labs.
 
 The preprint is available here: .
 
-This repository contains the code associated with the manuscript.
+This repository contains the code for the analysis of the scRNAseq datasets available here: .
