@@ -7,23 +7,23 @@ library(ggraph)
 library(monocle)
 library(viridis)
 
-###EXPORT MONOCLE INPUT FROM SEURAT####
+###EXPORT MONOCLE INPUT FROM SEURAT (run in R4####
 data <- as(as.matrix(eosinophils_steadystate@assays$RNA@data), 'sparseMatrix') 
-save(data,file="/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Monocle/data.Rdata")
+save(data,file="/Monocle/data.Rdata")
 
 pd <- new('AnnotatedDataFrame', data = eosinophils_steadystate@meta.data) 
 head(pd)
-save(pd,file="/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Monocle/pd.Rdata")
+save(pd,file="/Monocle/pd.Rdata")
 
 fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data)) 
-save(fData,file="/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Monocle/fData.Rdata")
+save(fData,file="/Monocle/fData.Rdata")
 
 fd <- new('AnnotatedDataFrame', data = fData) 
-save(fd,file="/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Monocle/fd.Rdata")
+save(fd,file="/Monocle/fd.Rdata")
 
 #use 2000 highly variable genes obtained from Seurat and used for clustering as ordering filter
 variablefeatures <- eosinophils_steadystate@assays$RNA@var.features
-save(variablefeatures, file="/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Monocle/variablefeatures.Rdata")
+save(variablefeatures, file="/Monocle/variablefeatures.Rdata")
 
 #####MONOCLE (run in R studio 3.6.1)#####
 monocle_ss <- newCellDataSet(data,
