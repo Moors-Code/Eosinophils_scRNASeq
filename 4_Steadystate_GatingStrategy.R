@@ -46,20 +46,8 @@ plot + theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axi
   scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdYlBu")))+ theme(legend.position="right")+ labs(title = "Cytek markers", y = "", x="")+
   ggsave("cytekmarkers.png", width = 12, height = 3)
 
-#FACS.markers.ordered <- c( "Itgb2","Cd33", "Cd53", "Hmgb1", #gmps
-                           "Pecam1", "Spn", "Cd63", "Itga2b" , "Clec12a" ,#progenitors
-                           "Lamp1",  "Cdh1",  #immature
-                           "Siglece", "Itgal", "Csf1r", "Ly6c1", #basal
-                           "Cd74","Fcgr2b", "Epcam",  #fos jun high
-                           "Icam1", "Slc3a2", "Ccr1", "Itgax", "Notch1","Notch2", "Ldlr","Fas", "Cxcr4",
-                           "Cd274","Cd80","Cd9","Fcgr3", #cd274
-                           "Sell", "Cd48", "Itgb1", "Itgb3", "Il1rl1", "Cd24a","Cd44") #blood
 
-#plot <- DotPlot(eosinophils_steadystate, features = FACS.markers.ordered)
-#plot + theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
-#  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdYlBu")))+ theme(legend.position="right")+ labs(title = "surface markers", y = "", x="")
-
-###FACS MARKERS
+### SURFACER MARKERS ###
 Idents(eosinophils_steadystate) <- "seurat_clusters"
 basal_intestinal <- subset(eosinophils_steadystate, idents = c("intestinal eosinophils", "basal eosinophils"))
 surface.markers <- c("Cd274", "Cd80","Cd9","Pecam1", "Icam1", "Fas", "Ly6a", "Itgax", "Itga4", "Clec12a", "Siglece")
