@@ -1,3 +1,23 @@
+####INTESTINAL PERCENTAGE####
+d <- rbind(c[5,], colSums(c[c(1,2,3,4),]))
+d
+pdf(file="Figures/IntestinalPercentage.pdf")
+barplot(d, horiz=FALSE,
+        legend = T, border=NA,
+        args.legend=list(bty = "n",x=180, cex=.8),
+        las = 1, 
+        col= c(col_vector[1], "gray"))
+dev.off()
+
+#hypergeometric test to test significance of enrichment in colon
+set1        <- 1430 #total intestinal eosinophils 
+set2        <- 1291 #cells in colon
+overlap     <- 977 #intestinal eos in colon 
+allterms    <- 1430+1291 #union
+phyper(overlap, set1, allterms-set1, set2, lower.tail=F) #1.255248e-121
+
+
+
 ####BASAL vs. ACTIVE COMPARISON#####
 basal_active <- subset(eosinophils_steadystate, idents = c("active eosinophils", "basal eosinophils"))
 
@@ -41,4 +61,35 @@ VlnPlot(eosinophils_steadystate, features="Regulatory1", group.by = "seurat_clus
 #test
 wilcox.test(eos_active$Regulatory1, eos_basal$Regulatory1, alternative = "two.sided") #p-value < 2.2e-16
 
- 
+
+#####DIFFERENTIALLY EXPRESSED GENES IN BASAL AND INTESTINAL CLUSTER COLON VS SMALL INTESTINE#####
+basal <- subset(eosinophils_steadystate, idents= "basal eosinophils")
+Idents(basal) <- "orig.ident"
+basal_CO_vs_SI <- FindMarkers(basal, ident.1 = "colon", ident.2 = "small intestine", only.pos = F)
+View(basal_SPL_vs_SI)
+basal_STO_vs_SI <- FindMarkers(basal, ident.1 = "stomach", ident.2 = "small intestine", only.pos = F)
+basal_SPL_vs_SI <- FindMarkers(basal, ident.1 = "spleen", ident.2 = "small intestine", only.pos = F)
+
+
+intestinal <- subset(eosinophils_steadystate, idents= "intestinal eosinophils")
+Idents(intestinal) <- "orig.ident"
+intestinal_CO_vs_SI <- FindMarkers(intestinal, ident.1 = "colon", ident.2 = "small intestine", only.pos = F, logfc.threshold = 0.25)
+intestinal_STO_vs_SI <- FindMarkers(intestinal, ident.1 = "stomach", ident.2 = "small intestine", only.pos = F, logfc.threshold = 0.25)
+sig_intestinal_CO_vs_SI <- intestinal_CO_vs_SI %>% filter(p_val_adj<0.05)
+write.csv(sig_intestinal_CO_vs_SI,"/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Steadystate/sig_intestinal_CO_vs_SI.csv", row.names = TRUE)
+
+View(basal_CO_vs_SI)
+BP_intestinal_CO_vs_SI <- preranked_BP(intestinal_CO_vs_SI)
+sig_BP_intestinal_CO_vs_SI <- BP_intestinal_CO_vs_SI%>% filter(padj<0.05)
+write.csv(sig_BP_intestinal_CO_vs_SI,"/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Steadystate/BP_intestinal_CO_vs_SI.csv", row.names = TRUE)
+
+View(basal_STO_vs_SI)
+a <- DEGs_volcano(intestinal_CO_vs_SI, 0.05, 0, "Intestinal eos: colon vs. SI","grey89", upperylim = 20, xlim = 1.5)
+b <- DEGs_volcano(intestinal_STO_vs_SI, 0.05, 0, "Intestinal eos: stomach vs. SI", "grey89", upperylim = 20, xlim = 2)
+c <- DEGs_volcano(basal_CO_vs_SI, 0.05, 0, "Basal eos: colon vs. SI","grey89", upperylim =20, xlim = 1.5)
+d <- DEGs_volcano(basal_STO_vs_SI, 0.05, 0, "Basal eos: stomach vs. SI","grey89", upperylim = 20, xlim = 1.5)
+e <- DEGs_volcano(basal_SPL_vs_SI, 0.05, 0, "Basal eos: spleen vs. SI","grey89", upperylim = 20, xlim = 1.5)
+
+ggarrange(a, b, c,d, e,  ncol = 5, nrow = 1) +
+  ggsave("Figures/Volcanos_orig.pdf", width = 25, height = 5)
+
