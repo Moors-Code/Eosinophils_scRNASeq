@@ -1,14 +1,14 @@
 # the dgMatrix is a valid input to create the Seurat object
-stomach <- data_to_sparse_matrix("/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Sample_preprocessing/Expression_data/Stomach.st")
-colon <- data_to_sparse_matrix("/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Sample_preprocessing/Expression_data/Colon.st")
-SI <- data_to_sparse_matrix("/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Sample_preprocessing/Expression_data/SI.st")
-Spleen <- data_to_sparse_matrix("/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Sample_preprocessing/Expression_data/Spleen.st")
-blood <- data_to_sparse_matrix("/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Sample_preprocessing/Expression_data/blood.st")
-bloodCR <- data_to_sparse_matrix("/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Sample_preprocessing/Expression_data/bloodCR.st")
-bonemarrow <- data_to_sparse_matrix("/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Sample_preprocessing/Expression_data/bonemarrow.st")
-bonemarrowCR <- data_to_sparse_matrix("/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Sample_preprocessing/Expression_data/bonemarrowCR.st")
-colonCR <- data_to_sparse_matrix("/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Sample_preprocessing/Expression_data/colonCR.st")
-stomachHP <- data_to_sparse_matrix("/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Sample_preprocessing/Expression_data/stomachHP.st")
+stomach <- data_to_sparse_matrix("/Expression_data/Stomach.st")
+colon <- data_to_sparse_matrix("/Expression_data/Colon.st")
+SI <- data_to_sparse_matrix("/Expression_data/SI.st")
+Spleen <- data_to_sparse_matrix("/Expression_data/Spleen.st")
+blood <- data_to_sparse_matrix("/Expression_data/blood.st")
+bloodCR <- data_to_sparse_matrix("/Expression_data/bloodCR.st")
+bonemarrow <- data_to_sparse_matrix("/Expression_data/bonemarrow.st")
+bonemarrowCR <- data_to_sparse_matrix("/Expression_data/bonemarrowCR.st")
+colonCR <- data_to_sparse_matrix("/Expression_data/colonCR.st")
+stomachHP <- data_to_sparse_matrix("/Expression_data/stomachHP.st")
 
 stomach <- CreateSeuratObject(stomach, project = "stomach")
 colon <- CreateSeuratObject(colon, project = "colon")
@@ -65,7 +65,7 @@ eosinophil_allsamples <- FindClusters(eosinophil_allsamples, resolution = 0.3)
 eosinophil_allsamples <- RunUMAP(eosinophil_allsamples, dims = 1:20)
 DimPlot(eosinophil_allsamples, order=T, group.by = "orig.ident", pt.size = 0.1, label=F, cols = col_vector)
 DimPlot(eosinophil_allsamples, order=T, group.by = "seurat_clusters", pt.size = 0.1, label=T, cols = col_vector)+
-  ggsave("allsampleUMAP.pdf", width = 6, height = 5) 
+  ggsave("Figures/allsampleUMAP.pdf", width = 6, height = 5) 
 FeaturePlot(eosinophil_allsamples, features = c("Siglecf", "Il5ra", "Ccr3", "Epx"), cols=pal, pt.size = .5, order = T)
 FeaturePlot(eosinophil_allsamples, features = c("Mki67"), cols=pal, pt.size = .5, order = T)
 
@@ -81,7 +81,7 @@ plot <- DotPlot(eosinophil_allsamples, features = markers.to.plot, dot.scale = 8
 plot + 
   theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
   scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdYlBu")))+ theme(legend.position="right")+
-  ggsave("allsampleDotPlot.pdf", width = 7, height = 5)
+  ggsave("Figures/allsampleDotPlot.pdf", width = 7, height = 5)
 
 
 ######SUBSETTING OF EOSINOPHIL CLUSTERS#######
@@ -105,7 +105,7 @@ DimPlot(eosinophil_pure, order=T, group.by = "seurat_clusters", pt.size = 0.2, l
 DimPlot(eosinophil_pure, reduction = "umap", pt.size = .5, split.by = "orig.ident", label=T)
 
 #save the eosinophil_pure dataset for downstream analysis
-saveRDS(eosinophil_pure, file = "/media/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Steadystate/eosinophil_pure.rds")
+saveRDS(eosinophil_pure, file = "eosinophil_pure.rds")
 
 
 
