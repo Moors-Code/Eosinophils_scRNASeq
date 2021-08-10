@@ -115,7 +115,7 @@ length(expressed_genes.list[["challenge"]])
 expressed_genes <- unique(union(expressed_genes.list[["steadystate"]], expressed_genes.list[["challenge"]]))
 length(expressed_genes)
 
-# Use dynamic time warping to align Mock and TGFB pseudospatial trajectories and create a cds object of aligned trajectories
+# Use dynamic time warping to align trajectories and create a cds object of aligned trajectories
 challgene.to.steadystate.aligned.cds <- getDTWcds(monocle_BBCR,monocle_BBC, 
                                       ref = "steadystate", query = "challenge", 
                                       expressed_genes = expressed_genes, cores = 1)
@@ -154,17 +154,17 @@ compare_cell_types_in_pseudotime(cds.aligned.list[["steadystate to challenge"]][
   #theme(legend.position="none", text=element_text(size=20)) +
   ggsave("Figures/aligned_trajectories.pdf", width = 9, height = 5)
 
-Pseudospatial.aligned.sig.genes.list <- list()
+Pseudotime.aligned.sig.genes.list <- list()
 
 for(sample in names(aligned.pseudotime.DEG.test.list)){
   
-  Pseudospatial.aligned.sig.genes.list[[sample]] <- row.names(subset(aligned.pseudotime.DEG.test.list[[sample]], 
+  Pseudotime.aligned.sig.genes.list[[sample]] <- row.names(subset(aligned.pseudotime.DEG.test.list[[sample]], 
                                                                      qval <= 1e-10))
   print(sample)
-  print(length(Pseudospatial.aligned.sig.genes.list[[sample]]))
+  print(length(Pseudotime.aligned.sig.genes.list[[sample]]))
 }
 
-genes_of_interest <- Pseudospatial.aligned.sig.genes.list[[sample]]
+genes_of_interest <- Pseudotime.aligned.sig.genes.list[[sample]]
 
 
 
