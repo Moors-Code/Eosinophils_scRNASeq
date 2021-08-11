@@ -1,54 +1,39 @@
 # the dgMatrix is a valid input to create the Seurat object
-stomach <- data_to_sparse_matrix("/Expression_data/Stomach.st")
-colon <- data_to_sparse_matrix("/Expression_data/Colon.st")
-SI <- data_to_sparse_matrix("/Expression_data/SI.st")
-Spleen <- data_to_sparse_matrix("/Expression_data/Spleen.st")
-blood <- data_to_sparse_matrix("/Expression_data/blood.st")
-bloodCR <- data_to_sparse_matrix("/Expression_data/bloodCR.st")
-bonemarrow <- data_to_sparse_matrix("/Expression_data/bonemarrow.st")
-bonemarrowCR <- data_to_sparse_matrix("/Expression_data/bonemarrowCR.st")
-colonCR <- data_to_sparse_matrix("/Expression_data/colonCR.st")
-stomachHP <- data_to_sparse_matrix("/Expression_data/stomachHP.st")
+stomach       <- data_to_sparse_matrix("/Expression_data/Stomach.st")
+colon         <- data_to_sparse_matrix("/Expression_data/Colon.st")
+SI            <- data_to_sparse_matrix("/Expression_data/SI.st")
+Spleen        <- data_to_sparse_matrix("/Expression_data/Spleen.st")
+blood         <- data_to_sparse_matrix("/Expression_data/blood.st")
+bloodCR       <- data_to_sparse_matrix("/Expression_data/bloodCR.st")
+bonemarrow    <- data_to_sparse_matrix("/Expression_data/bonemarrow.st")
+bonemarrowCR  <- data_to_sparse_matrix("/Expression_data/bonemarrowCR.st")
+colonCR       <- data_to_sparse_matrix("/Expression_data/colonCR.st")
+stomachHP     <- data_to_sparse_matrix("/Expression_data/stomachHP.st")
 
-stomach <- CreateSeuratObject(stomach, project = "stomach")
-colon <- CreateSeuratObject(colon, project = "colon")
-SI <- CreateSeuratObject(SI, project = "SI")
-Spleen <- CreateSeuratObject(Spleen, project = "Spleen")
-blood <- CreateSeuratObject(blood, project = "blood")
-bloodCR <- CreateSeuratObject(bloodCR, project = "bloodCR")
-bonemarrow <- CreateSeuratObject(bonemarrow, project = "bonemarrow")
-bonemarrowCR <- CreateSeuratObject(bonemarrowCR, project = "bonemarrowCR")
-colonCR <- CreateSeuratObject(colonCR, project = "colonCR")
-stomachHP <- CreateSeuratObject(stomachHP, project = "stomachHP")
+stomach       <- CreateSeuratObject(stomach, project = "stomach")
+colon         <- CreateSeuratObject(colon, project = "colon")
+SI            <- CreateSeuratObject(SI, project = "SI")
+Spleen        <- CreateSeuratObject(Spleen, project = "Spleen")
+blood         <- CreateSeuratObject(blood, project = "blood")
+bloodCR       <- CreateSeuratObject(bloodCR, project = "bloodCR")
+bonemarrow    <- CreateSeuratObject(bonemarrow, project = "bonemarrow")
+bonemarrowCR  <- CreateSeuratObject(bonemarrowCR, project = "bonemarrowCR")
+colonCR       <- CreateSeuratObject(colonCR, project = "colonCR")
+stomachHP     <- CreateSeuratObject(stomachHP, project = "stomachHP")
 
 
 ####MERGE ALL SEURAT OBJECTS INTO ONE SAMPLE AND THEN REMOVE CONTAMINANTS####
-eosinophil_allsamples <- merge(blood, c(bloodCR, 
-                                        bonemarrow, bonemarrowCR, 
-                                        colon, colonCR,
-                                        lung,
-                                        neonates,
-                                        SI,
-                                        Spleen,
-                                        stomach,
-                                        stomachHP), add.cell.ids = c("blood", "bloodCR", 
-                    "bonemarrow", "bonemarrowCR", 
-                    "colon", "colonCR",
-                    "lung",
-                    "neonates",
-                    "smallintestine",
-                    "spleen",
-                    "stomach",
-                    "stomachHP"))
+eosinophil_allsamples <- merge(blood, c(bloodCR, bonemarrow, bonemarrowCR,  colon, colonCR, SI, Spleen, stomach,stomachHP), 
+                               add.cell.ids = 
+                               c("blood", "bloodCR",   "bonemarrow", "bonemarrowCR",   "colon", "colonCR", "smallintestine", "spleen", "stomach", "stomachHP")
+                              )
 
 ##### QUALITY FILTERING #####
 length(eosinophil_allsamples@active.ident)
 eosinophil_allsamples[["percent.mt"]] <- PercentageFeatureSet(eosinophil_allsamples, pattern = "^mt.")
 VlnPlot(eosinophil_allsamples, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size=0.1)
 RidgePlot(eosinophil_allsamples, features="nFeature_RNA")
-plot1 <- FeatureScatter(eosinophil_allsamples, feature1 = "nCount_RNA", feature2 = "percent.mt")
-plot2 <- FeatureScatter(eosinophil_allsamples, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
-plot1 + plot2
+FeatureScatter(eosinophil_allsamples, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
 eosinophil_allsamples <- subset(eosinophil_allsamples, subset = nFeature_RNA > 200 & nFeature_RNA < 2500)
 length(eosinophil_allsamples@active.ident)
 
@@ -67,7 +52,6 @@ DimPlot(eosinophil_allsamples, order=T, group.by = "orig.ident", pt.size = 0.1, 
 DimPlot(eosinophil_allsamples, order=T, group.by = "seurat_clusters", pt.size = 0.1, label=T, cols = col_vector)+
   ggsave("Figures/allsampleUMAP.pdf", width = 6, height = 5) 
 FeaturePlot(eosinophil_allsamples, features = c("Siglecf", "Il5ra", "Ccr3", "Epx"), cols=pal, pt.size = .5, order = T)
-FeaturePlot(eosinophil_allsamples, features = c("Mki67"), cols=pal, pt.size = .5, order = T)
 
 #####CLUSTER MARKERS AND ANNOTATION#######
 eosinophil_allsamples_markers <- FindAllMarkers(object = eosinophil_allsamples, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
