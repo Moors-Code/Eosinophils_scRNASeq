@@ -1,7 +1,6 @@
 # Eosinophils_scRNASeq
 
-This is a resource for the article: "The gastrointestinal tract harbors a host-protective PD-L1+ CD80+ eosinophil subset endowed with 
-regulatory and bactericidal properties", from the Arnold and Moor labs. 
+This is a resource for the article: "Single-cell RNA sequencing unveils intestinal eosinophil development and specialization", from the Arnold and Moor labs. 
 
 The preprint is available here: .
 
