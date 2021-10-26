@@ -1,4 +1,4 @@
-###EXPORT MONOCLE INPUT FROM SEURAT (run in R4)####
+###EXPORT MONOCLE INPUT FROM SEURAT (run in R4.1.0)####
 data <- as(as.matrix(eosinophils_steadystate@assays$RNA@data), 'sparseMatrix') 
 save(data,file="/Monocle/data.Rdata")
 
