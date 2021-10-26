@@ -1,4 +1,7 @@
 ##### SCENIC ###
+#installations 
+source('Packages_functions.R', echo=TRUE)
+
 if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
 BiocManager::version()
 BiocManager::install(c("AUCell", "RcisTarget"))
