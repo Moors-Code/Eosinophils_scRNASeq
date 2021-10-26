@@ -154,31 +154,6 @@ pheatmap(regulon.scores.scaled, cluster_rows = T,cluster_cols = F, annotation_co
 
 #Binary regulon activity
 library(AUCell)
-Binarize_regulon_activity <- function (scenicOptions, skipBoxplot = FALSE, skipHeatmaps = FALSE, 
-                                       skipTsne = FALSE, exprMat = NULL) 
-{
-  nCores <- getSettings(scenicOptions, "nCores")
-  regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
-  thresholds <- loadInt(scenicOptions, "aucell_thresholds")
-  thresholds <- getThresholdSelected(thresholds)
-  print("its running")
-  regulonsCells <- setNames(lapply(names(thresholds), function(x) {
-    trh <- thresholds[x]
-    names(which(getAUC(regulonAUC)[x, ] > trh))
-  }), names(thresholds))
-  regulonActivity <- reshape2::melt(regulonsCells)
-  binaryRegulonActivity <- t(table(regulonActivity[, 1], regulonActivity[, 
-                                                                         2]))
-  class(binaryRegulonActivity) <- "matrix"
-  saveRDS(binaryRegulonActivity, file = getIntName(scenicOptions, 
-                                                   "aucell_binary_full"))
-  binaryRegulonActivity_nonDupl <- binaryRegulonActivity[which(rownames(binaryRegulonActivity) %in% 
-                                                                 onlyNonDuplicatedExtended(rownames(binaryRegulonActivity))), 
-                                                         ]
-  saveRDS(binaryRegulonActivity_nonDupl, file = getIntName(scenicOptions, 
-                                                           "aucell_binary_nonDupl"))
-  return(binaryRegulonActivity)
-}
 binary.regulon.activity <- Binarize_regulon_activity(scenicOptions, skipBoxplot = FALSE, skipHeatmaps = FALSE, 
                                                    skipTsne = FALSE, exprMat = NULL)
 cells.ord.cluster <- steadystate.scenic@active.ident
