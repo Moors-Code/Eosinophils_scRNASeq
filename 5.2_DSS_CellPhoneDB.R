@@ -40,11 +40,11 @@ write.table(meta_data_meta, '.../cellphonedb_meta_wtDSS.txt', sep='\t', quote=F,
 
 ###Run CellPhoneDB in terminal 
 #activate conda environment 
-source /mnt/khandler/cell_phone_db/bin/activate
+#source /.../cell_phone_db/bin/activate
 #generate new directory for CellPhoneDB output 
-mkdir /.../ouputs_wtDSS 
+#mkdir /.../ouputs_wtDSS 
 #run CellPhoneDB 
-cellphonedb method statistical_analysis /.../cellphonedb_meta_wtDSS.txt /.../cellphonedb_count_wtDSS.txt --output-path=/.../ouputs_wtDSS --project-name="IBD_wtDSS" --counts-data=ensembl 
+#cellphonedb method statistical_analysis /.../cellphonedb_meta_wtDSS.txt /.../cellphonedb_count_wtDSS.txt --output-path=/.../ouputs_wtDSS --project-name="IBD_wtDSS" --counts-data=ensembl 
 
 
 ###Plotting of significant interactions using ktplots 
