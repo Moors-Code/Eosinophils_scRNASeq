@@ -4,4 +4,4 @@ This is a resource for the article: "Single-cell RNA sequencing unveils intestin
 
 The preprint is available here: .
 
-This repository contains the code for the analysis of the scRNAseq datasets available here: .
+This repository contains the code for the analysis of the scRNAseq datasets available here: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182001.
