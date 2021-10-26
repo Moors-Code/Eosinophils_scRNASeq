@@ -106,6 +106,36 @@ preranked_BP <- function(x) {
 }
 
 
+
+#####SCENIC#####
+Binarize_regulon_activity <- function (scenicOptions, skipBoxplot = FALSE, skipHeatmaps = FALSE, 
+                                       skipTsne = FALSE, exprMat = NULL) 
+{
+  nCores <- getSettings(scenicOptions, "nCores")
+  regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
+  thresholds <- loadInt(scenicOptions, "aucell_thresholds")
+  thresholds <- getThresholdSelected(thresholds)
+  print("its running")
+  regulonsCells <- setNames(lapply(names(thresholds), function(x) {
+    trh <- thresholds[x]
+    names(which(getAUC(regulonAUC)[x, ] > trh))
+  }), names(thresholds))
+  regulonActivity <- reshape2::melt(regulonsCells)
+  binaryRegulonActivity <- t(table(regulonActivity[, 1], regulonActivity[, 
+                                                                         2]))
+  class(binaryRegulonActivity) <- "matrix"
+  saveRDS(binaryRegulonActivity, file = getIntName(scenicOptions, 
+                                                   "aucell_binary_full"))
+  binaryRegulonActivity_nonDupl <- binaryRegulonActivity[which(rownames(binaryRegulonActivity) %in% 
+                                                                 onlyNonDuplicatedExtended(rownames(binaryRegulonActivity))), 
+                                                         ]
+  saveRDS(binaryRegulonActivity_nonDupl, file = getIntName(scenicOptions, 
+                                                           "aucell_binary_nonDupl"))
+  return(binaryRegulonActivity)
+}
+
+
+
 ####COLOR PALETTE FOR PLOTS ####
 n <- 30
 qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
