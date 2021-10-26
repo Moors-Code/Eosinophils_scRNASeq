@@ -1,42 +1,8 @@
-# Scenic 
-if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
-BiocManager::version()
-# If your bioconductor version is previous to 4.0, see the section bellow
-
-## Required
-BiocManager::install(c("AUCell", "RcisTarget"))
-BiocManager::install(c("GENIE3")) # Optional. Can be replaced by GRNBoost
-library(AUCell)
-## Optional (but highly recommended):
-# To score the network on cells (i.e. run AUCell):
-BiocManager::install(c("zoo", "mixtools", "rbokeh"))
-# For various visualizations and perform t-SNEs:
-BiocManager::install(c("DT", "NMF", "ComplexHeatmap", "R2HTML", "Rtsne"))
-# To support paralell execution (not available in Windows):
-BiocManager::install(c("doMC", "doRNG"))
-# To export/visualize in http://scope.aertslab.org
-if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
-devtools::install_github("aertslab/SCopeLoomR", build_vignettes = TRUE)
-
-if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
-devtools::install_github("aertslab/SCENIC") 
-packageVersion("SCENIC")
-
-dbFiles <- c("https://resources.aertslab.org/cistarget/databases/mus_musculus/mm9/refseq_r45/mc9nr/gene_based/mm9-500bp-upstream-7species.mc9nr.feather",
-             "https://resources.aertslab.org/cistarget/databases/mus_musculus/mm9/refseq_r45/mc9nr/gene_based/mm9-tss-centered-10kb-7species.mc9nr.feather")
-# mc9nr: Motif collection version 9: 24k motifs
-
-options(timeout = max(300, getOption("timeout")))
-
-for(featherURL in dbFiles)
-{
-  download.file(featherURL, destfile=basename(featherURL)) # saved in current dir
-}
-
-vignetteFile <- "https://raw.githubusercontent.com/aertslab/SCENIC/master/vignettes/SCENIC_Running.Rmd"
-download.file(vignetteFile, "SCENIC_myRun.Rmd")
-
+#####SCENIC######
+source('Packages_functions.R', echo=TRUE)
 library(SCENIC)
+
+#get data
 DimPlot(refquery, group.by = "seurat_clusters")
 Idents(refquery) <- "seurat_clusters"
 active <- subset(refquery, ident= "active eosinophils")
@@ -182,31 +148,6 @@ pheatmap(regulon.scores.scaled, cluster_rows = T,cluster_cols = F, annotation_co
 
 #Binary regulon activity
 library(AUCell)
-Binarize_regulon_activity <- function (scenicOptions, skipBoxplot = FALSE, skipHeatmaps = FALSE, 
-                                       skipTsne = FALSE, exprMat = NULL) 
-{
-  nCores <- getSettings(scenicOptions, "nCores")
-  regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
-  thresholds <- loadInt(scenicOptions, "aucell_thresholds")
-  thresholds <- getThresholdSelected(thresholds)
-  print("its running")
-  regulonsCells <- setNames(lapply(names(thresholds), function(x) {
-    trh <- thresholds[x]
-    names(which(getAUC(regulonAUC)[x, ] > trh))
-  }), names(thresholds))
-  regulonActivity <- reshape2::melt(regulonsCells)
-  binaryRegulonActivity <- t(table(regulonActivity[, 1], regulonActivity[, 
-                                                                         2]))
-  class(binaryRegulonActivity) <- "matrix"
-  saveRDS(binaryRegulonActivity, file = getIntName(scenicOptions, 
-                                                   "aucell_binary_full"))
-  binaryRegulonActivity_nonDupl <- binaryRegulonActivity[which(rownames(binaryRegulonActivity) %in% 
-                                                                 onlyNonDuplicatedExtended(rownames(binaryRegulonActivity))), 
-                                                         ]
-  saveRDS(binaryRegulonActivity_nonDupl, file = getIntName(scenicOptions, 
-                                                           "aucell_binary_nonDupl"))
-  return(binaryRegulonActivity)
-}
 binary.regulon.activity <- Binarize_regulon_activity(scenicOptions, skipBoxplot = FALSE, skipHeatmaps = FALSE, 
                                                    skipTsne = FALSE, exprMat = NULL)
 cells.ord.cluster <- active.scenic@active.ident
