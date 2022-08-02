@@ -78,7 +78,6 @@ DEGs_volcano <- function(DEGs, p_treshold, FC_treshold, title, color, upperylim,
 }
 
 ####FGSEA####
-
 #import dataset
 msigdbr_species()
 m_df<- msigdbr(species = "Mus musculus", category = "C5", subcategory = "BP")
@@ -136,18 +135,18 @@ Binarize_regulon_activity <- function (scenicOptions, skipBoxplot = FALSE, skipH
 
 
 
-####COLOR PALETTE FOR PLOTS ####
+####COLOR PALETTE####
 n <- 30
 qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
-col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
-pie(rep(1,n), col=sample(col_vector, n))
+col_vector1 = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+pie(rep(1,n), col=sample(col_vector1, n))
 color = grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)]
 pie(rep(6,n), col=sample(color, n))
-col_vector
+col_vector1
 
 col_vector =c(wes_palette("Darjeeling1"), wes_palette("GrandBudapest1"), wes_palette("Cavalcanti1"), wes_palette("GrandBudapest2"), wes_palette("FantasticFox1"))
 pal <- wes_palette("Zissou1", 10, type = "continuous")
 pal2 <- wes_palette("Zissou1", 5, type = "continuous")
-pal[3:10]
+
 
 
