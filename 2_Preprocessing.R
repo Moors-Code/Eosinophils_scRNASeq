@@ -57,15 +57,29 @@ FeaturePlot(eosinophil_allsamples, features = c("Siglecf", "Il5ra", "Ccr3", "Epx
 eosinophil_allsamples_markers <- FindAllMarkers(object = eosinophil_allsamples, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
 View(eosinophil_allsamples_markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_log2FC))
 
-#general markers
-markers.to.plot <- c("Ptprc","Ccr3","Siglecf" ,"Itgax", "Il5ra","Epx", "Fcer1a","Ms4a7", "H2-Ab1", "Cst3","S100a4", 
-                      "Epcam", "Cdh1",  "Ccr7", "Cd19", "Irf4", "Col1a1","Cd14", "Nkg7","Il7r",  "Cd8a")
-                    
-plot <- DotPlot(eosinophil_allsamples, features = markers.to.plot, dot.scale = 8, cols = col_vector)
-plot + 
-  theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
-  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdYlBu")))+ theme(legend.position="right")+
-  ggsave("Figures/allsampleDotPlot.pdf", width = 7, height = 5)
+current.cluster.ids <- c(0:16)
+new.cluster.ids <-  c("Eosinophil 1",
+                      "Eosinophil 2", 
+                      "Eosinophil 3",
+                      "Eosinophil 4",
+                      "Neutrophil progenitors",
+                      "Monocytes",
+                      "Epithelial cells",
+                      "B cells",
+                      "Eosinophils 5 (mito high)",
+                      "Epithelial cells",
+                      "Stromal cells",
+                      "Macrophages",
+                      "Paneth cells",
+                      "Plasma cells",
+                      "Monocytes",
+                      "T cells",
+                      "Platelets")
+eosinophil_allsamples@meta.data$seurat_clusters <- plyr::mapvalues(x = eosinophil_allsamples@meta.data$seurat_clusters, from = current.cluster.ids, to = new.cluster.ids)
+Idents(eosinophil_allsamples) <- "seurat_clusters"
+DimPlot(eosinophil_allsamples, reduction = "umap", pt.size = .5, label=F, cols = col_vector[1:17]) 
+a <- DimPlot(eosinophil_allsamples, reduction = "umap", pt.size = .3, label=F, cols = col_vector[1:17]) 
+a + theme_void() +ggsave("allsampleDimPlot.pdf", width = 7, height = 4) 
 
 
 ######SUBSETTING OF EOSINOPHIL CLUSTERS#######
