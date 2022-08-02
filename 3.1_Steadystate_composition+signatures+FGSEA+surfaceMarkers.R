@@ -36,6 +36,66 @@ eosinophils_steadystate$seurat_clusters <- factor(x = eosinophils_steadystate$se
 DimPlot(eosinophils_steadystate, reduction = "umap", pt.size = .5, label=F, cols = col_vector[1:5]) + 
   ggsave("Figures/UMAP.pdf", width = 8, height = 5)
 
+##quality control
+eosinophils_steadystate$log10GenesPerUMI <- log10(eosinophils_steadystate$nFeature_RNA) / log10(eosinophils_steadystate$nCount_RNA)
+eosinophils_steadystate$mitoRatio <- PercentageFeatureSet(object = eosinophils_steadystate, pattern = "^mt-")
+eosinophils_steadystate$mitoRatio <- eosinophils_steadystate@meta.data$mitoRatio / 100
+
+# Visualize the number UMIs/transcripts per cell
+metadata <- eosinophils_steadystate@meta.data
+metadata$cells <- rownames(metadata)
+
+# Rename columns
+metadata <- metadata %>%
+  dplyr::rename(sample = orig.ident,
+                nUMI = nCount_RNA,
+                nGene = nFeature_RNA)
+
+metadata %>% 
+  ggplot(aes(color=sample, x=nUMI, fill= sample)) + 
+  geom_density(alpha = 0.2) + 
+  scale_color_manual(values=col_vector)+
+  scale_fill_manual(values=col_vector)+
+  scale_x_log10() + 
+  theme_classic() +
+  ylab("Cell density") +ggsave("QCUMI.pdf", width = 4, height = 3)
+
+mean(eosinophils_steadystate@meta.data$nCount_RNA) #1967.104
+mean(eosinophil_allsamples@meta.data$nCount_RNA) #2087.45
+
+mean(eosinophils_steadystate@meta.data$nFeature_RNA) #841.1087
+mean(eosinophil_allsamples@meta.data$nFeature_RNA) #946.7647
+
+# Visualize the distribution of genes detected per cell via histogram
+metadata %>% 
+  ggplot(aes(color=sample, x=nGene, fill= sample)) + 
+  geom_density(alpha = 0.2) + 
+  theme_classic() +  
+  scale_color_manual(values=col_vector)+
+  scale_fill_manual(values=col_vector)+
+  ylab("Cell density")+
+  scale_x_log10() +
+  ggsave("QCgenes.pdf", width = 4, height = 3)
+
+
+#mito
+metadata %>% 
+  ggplot(aes(color=sample, x=mitoRatio, fill=sample)) + 
+  geom_density(alpha = 0.2) + 
+  scale_x_log10() + 
+  theme_classic() +
+  ylab("Cell density")+
+  scale_color_manual(values=col_vector)+
+  scale_fill_manual(values=col_vector)+
+  ggsave("QCmito.pdf", width = 4, height = 3)
+
+# Visualize the overall complexity of the gene expression by visualizing the genes detected per UMI
+metadata %>%
+  ggplot(aes(x=log10GenesPerUMI, color = condition, fill=condition)) +
+  geom_density(alpha = 0.2) +
+  theme_classic() +
+  geom_vline(xintercept = 0.8)
+            
 #expression of key markers
 length(eosinophils_steadystate@active.ident)
 a<-plot_density(eosinophils_steadystate, "Siglecf", pal = "magma")
@@ -44,6 +104,7 @@ c<-plot_density(eosinophils_steadystate, "Ccr3", pal = "magma")
 d<-plot_density(eosinophils_steadystate, "Epx", pal = "magma")
 ggarrange(a, b, c, d, ncol = 4, nrow = 1) + ggsave("Figures/keymarkers.pdf", width = 18, height = 4)
 
+            
 #######COMPOSITIONAL ANALYSIS######
 #frequencies per cluster
 numberofcells         <- table(eosinophils_steadystate$orig.ident, eosinophils_steadystate$seurat_clusters)
@@ -388,18 +449,6 @@ plot + theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axi
   scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdYlBu")))+ theme(legend.position="right")+ labs(title = "Cytek markers", y = "", x="")+
   ggsave("cytekmarkers.png", width = 12, height = 3)
 
-#FACS.markers.ordered <- c( "Itgb2","Cd33", "Cd53", "Hmgb1", #gmps
-                           "Pecam1", "Spn", "Cd63", "Itga2b" , "Clec12a" ,#progenitors
-                           "Lamp1",  "Cdh1",  #immature
-                           "Siglece", "Itgal", "Csf1r", "Ly6c1", #basal
-                           "Cd74","Fcgr2b", "Epcam",  #fos jun high
-                           "Icam1", "Slc3a2", "Ccr1", "Itgax", "Notch1","Notch2", "Ldlr","Fas", "Cxcr4",
-                           "Cd274","Cd80","Cd9","Fcgr3", #cd274
-                           "Sell", "Cd48", "Itgb1", "Itgb3", "Il1rl1", "Cd24a","Cd44") #blood
-
-#plot <- DotPlot(eosinophils_steadystate, features = FACS.markers.ordered)
-#plot + theme(axis.text.x = element_text(angle = 45, face="italic", hjust=1), axis.text.y = element_text(face="bold")) + 
-#  scale_colour_gradientn(colours = rev(brewer.pal(n = 11, name = "RdYlBu")))+ theme(legend.position="right")+ labs(title = "surface markers", y = "", x="")
 
 ###FACS MARKERS
 Idents(eosinophils_steadystate) <- "seurat_clusters"
