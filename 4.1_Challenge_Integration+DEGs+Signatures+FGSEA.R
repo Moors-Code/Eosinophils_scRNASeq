@@ -139,60 +139,36 @@ phyper(overlap, set1, allterms-set1, set2, lower.tail=F) #7.365844e-25
 
 
 #LOCAL DENSITY
-a <- DimPlot(refquery, order=T, group.by = "orig.ident", pt.size = .2, label=F, cols = col_vector) + theme(legend.position = "none") + labs(title=" ")
 
-b <- DimPlot(refquery, reduction = "umap", group.by = c("orig.ident"), pt.size=.2,
-             cols = c( "bonemarrow"="black","bloodCR"="grey", "blood"="grey", "bonemarrowCR"= "grey",  "stomach"="grey", 
-                       "stomachHP "="grey", "colonCR"="grey", "colon"="grey", "small intestine"="grey",  "bone marrow"="grey"),
-             order = c("bonemarrow", "bonemarrowCR", "bloodCR", "blood", "stomach","colon", "colonCR", "stomachHP"))+ theme_void() + 
+#LOCAL DENSITY
+DimPlot(refquery, order=T, group.by = "orig.ident", pt.size = .2, label=F, cols = col_vector) 
+
+a<-DimPlot(refquery, reduction = "umap", group.by = c("orig.ident"), pt.size=1, 
+             cols = c( "bonemarrow"="black","bloodCR"="grey", "blood"="grey", "bonemarrowCR"= "darkred",  "stomach"="grey", 
+                       "stomachHP"="grey", "colonCR"="grey", "colon"="grey", "small intestine"="grey", "spleen"="grey"),
+             order = c("bonemarrowCR", "bonemarrow", "bloodCR", "blood", "stomach","colon", "colonCR", "stomachHP"))+ theme_void()+
   theme(legend.position = "none") + labs(title="bone marrow")
 
-b1 <- DimPlot(refquery, reduction = "umap", group.by = c("orig.ident"), pt.size=.2,
-              cols = c( "bloodCR"="grey", "blood"="grey",  "bonemarrow"= "grey",  "bonemarrowCR"= "black", "stomach"="grey", 
-                        "stomachHP "="grey", "colonCR"="grey",  "colon"="grey","small intestine"="grey",  "bone marrow"="grey"),
-              order = c("bonemarrowCR","bonemarrow",  "bloodCR", "blood", "stomach", "colon", "colonCR", "stomachHP"))+ theme_void() + 
-  theme(legend.position = "none") + labs(title="bone marrow CR")
-
-c <- DimPlot(refquery, reduction = "umap", group.by = c("orig.ident"), pt.size=.2,
-             cols = c( "blood"="black",  "bloodCR"="grey",  "bonemarrow"= "grey",  "bonemarrowCR"= "grey", "stomach"="grey", 
-                       "stomachHP "="grey", "colonCR"="grey",  "colon"="grey", "small intestine"="grey",  "bone marrow"="grey"),
-             order = c("blood","bonemarrowCR", "bloodCR", "bonemarrow",   "stomach", "colon", "colonCR", "stomachHP")) + theme_void()+ 
+b<-DimPlot(refquery, reduction = "umap", group.by = c("orig.ident"), pt.size=1,
+              cols = c( "bloodCR"="darkred", "blood"="black",  "bonemarrow"= "grey",  "bonemarrowCR"= "grey", "stomach"="grey", 
+                        "stomachHP"="grey", "colonCR"="grey",  "colon"="grey","small intestine"="grey", "spleen"="grey"),
+              order = c("bloodCR", "blood", "bonemarrowCR","bonemarrow",   "stomach", "colon", "colonCR", "stomachHP"))+ theme_void() + 
   theme(legend.position = "none") + labs(title="blood")
 
-c1 <- DimPlot(refquery, reduction = "umap", group.by = c("orig.ident"), pt.size=.2,
-              cols = c( "bloodCR"="black", "blood"="grey",  "bonemarrow"= "grey",  "bonemarrowCR"= "grey", "stomach"="grey", 
-                        "stomachHP "="grey","colonCR"="grey", "colon"="grey", "small intestine"="grey",  "bone marrow"="grey"),
-              order = c("bloodCR", "bonemarrow", "blood", "stomach", "colon", "colonCR", "bonemarrowCR", "stomachHP"))+ theme_void() +
-  theme(legend.position = "none") + labs(title="blood CR")
-
-d <- DimPlot(refquery, reduction = "umap", group.by = c("orig.ident"), pt.size=.2,
+c<-DimPlot(refquery, reduction = "umap", group.by = c("orig.ident"), pt.size=1,
              cols = c( "colon"="black",  "bloodCR"="grey", "blood"="grey",  "bonemarrow"= "grey",  "bonemarrowCR"= "grey","stomach"="grey", 
-                       "stomachHP "="grey", "colonCR"="grey", "small intestine"="grey",  "bone marrow"="grey"),
-             order = c("colon", "bloodCR", "bonemarrow", "blood", "stomach", "colonCR", "bonemarrowCR", "stomachHP"))+ theme_void() +
+                       "stomachHP"="grey", "colonCR"="darkred", "small intestine"="grey", "spleen"="grey"),
+             order = c("colonCR","colon", "bloodCR", "bonemarrow", "blood", "stomach",  "bonemarrowCR", "stomachHP", "small intestine"))+ theme_void() +
   theme(legend.position = "none") + labs(title="colon")
 
-d1 <- DimPlot(refquery, reduction = "umap", group.by = c("orig.ident"), pt.size=.2,
-              cols = c( "bloodCR"="grey", "blood"="grey",  "bonemarrow"= "grey",  "bonemarrowCR"= "grey", "stomach"="grey", 
-                        "stomachHP "="grey", "colonCR"="black",  "colon"="grey", "small intestine"="grey",  "bone marrow"="grey"),
-              order = c("colonCR","bloodCR", "bonemarrow", "blood", "stomach", "colon",  "bonemarrowCR", "stomachHP")) + theme_void()+
-  theme(legend.position = "none") + labs(title="colon CR")
-
-
-e <- DimPlot(refquery, reduction = "umap", group.by = c("orig.ident"), pt.size=.2,
+d <- DimPlot(refquery, reduction = "umap", group.by = c("orig.ident"), pt.size=1,
              cols = c("stomach"="black", "bloodCR"="grey", "blood"="grey",  "bonemarrow"= "grey",  "bonemarrowCR"= "grey", 
-                      "stomachHP"="grey","colonCR"="grey",   "colon"="grey", "small intestine"="grey",  "bone marrow"="grey"),
-             order = c( "stomach", "colonCR","bloodCR", "bonemarrow", "blood",  "colon", "bonemarrowCR", "stomachHP")) + theme_void()+
+                      "stomachHP"="darkred","colonCR"="grey",   "colon"="grey", "small intestine"="grey",  "spleen"="grey"),
+             order = c("stomachHP", "stomach", "colonCR","bloodCR", "bonemarrow", "blood",  "colon", "bonemarrowCR")) + theme_void()+
   theme(legend.position = "none") + labs(title="stomach")
 
 
-e1 <- DimPlot(refquery, reduction = "umap", group.by = c("orig.ident"), pt.size=.2,
-              cols = c( "bloodCR"="grey", "blood"="grey",  "bonemarrow"= "grey",  "bonemarrowCR"= "grey", "stomach"="grey", 
-                        "stomachHP"="black", "colonCR"="grey",  "colon"="grey", "small intestine"="grey",  "bone marrow"="grey"),
-              order = c( "stomachHP", "bloodCR", "bonemarrow", "blood","stomach",  "colon", "colonCR", "bonemarrowCR"))+ theme_void() +
-  theme(legend.position = "none") + labs(title="stomach HP")
-
-ggarrange( b, b1, c, c1, d, d1, e, e1, ncol = 4, nrow = 2)+ ggsave("Figures/conditionUMAP.pdf", width = 16, height = 8)
-
+ggarrange( a,b,c,d, ncol = 4)+ ggsave("Figures/conditionUMAP.pdf", width = 18, height = 4)
 
 
 ###DIFFERENTIAL GENE EXPRESSION####
@@ -412,68 +388,6 @@ VlnPlot(active_challenge, features="apoptosis.score1", group.by = "orig.ident",c
   ggsave("Apoptosis_violin_challenge.pdf", width = 8, height = 6)
 wilcox.test(eos_colonCR$apoptosis.score1, eos_colon$apoptosis.score1, alternative = "two.sided") #p-value < 2.2e-16
 wilcox.test(eos_stomachHP$apoptosis.score1, eos_stomach$apoptosis.score1, alternative = "two.sided") #p-value < 2.2e-16
-
-
-######BONE MARROW AND BLOOD C.Rodentium#####
-Idents(refquery) <- "orig.ident"
-bonemarrow_CR_markers <- FindMarkers(refquery, ident.1 = "bonemarrowCR", ident.2 = "bonemarrow", verbose = FALSE)
-View(bonemarrow_CR_nomarkers)
-write.csv(bonemarrow_CR_markers %>% top_n(n = 200, wt = avg_log2FC),"bonemarrow_CR_markers.csv", row.names = TRUE)
-
-
-blood_CR_markers <- FindMarkers(refquery, ident.1 = "bloodCR", ident.2 = "blood", verbose = FALSE)
-View(blood_CR_markers)
-write.csv(blood_CR_markers %>% top_n(n = 200, wt = avg_log2FC),"blood_CR_markers.csv", row.names = TRUE)
-
-
-BMBlood_challenge <- subset(refquery, idents=c("bonemarrow", "bonemarrowCR", "blood", "bloodCR"))
-BMBlood_challenge$orig.ident <- factor(x = BMBlood_challenge$orig.ident, levels = c("bonemarrow", "bonemarrowCR", "blood", "bloodCR"))
-BMBlood_challenge <-AddModuleScore(BMBlood_challenge, features=Granules_synthesis_list ,name = "Granules")
-VlnPlot(BMBlood_challenge, features="Granules1", group.by = "orig.ident", cols= c("gray45", "khaki2", "gray86", "orange2"), pt.size = 0) +  theme_classic() + 
-  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
-  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+
-  labs(y = "Granule signature", title = " ", x="") + theme(legend.position="right") +  
-  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
-  ggsave("Figures/Granules_violin_BMblood.pdf", width = 8, height = 6)g
-
-wilcox.test(eos_BMCR$Granules1, eos_BM$Granules1, alternative = "two.sided")
-wilcox.test(eos_BLCR$Granules1, eos_BL$Granules1, alternative = "two.sided") 
-
-antimicrobial2 <- list(c("S100a6", "S100a8", "S100a9", "Lcn2", "Lyz2", "Adam17", "Camp", "Ltf"))
-BMBlood_challenge <-AddModuleScore(BMBlood_challenge, features= antimicrobial2,name = "Antimicrobial2")
-VlnPlot(BMBlood_challenge, features="Antimicrobial21", group.by = "orig.ident", cols= c("gray45", "khaki2", "gray86", "orange2"), pt.size = 0) +  theme_classic() + 
-  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
-  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+
-  labs(y = "Non-gamma antimicrobial signature", title = " ", x="") + theme(legend.position="right") +  
-  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
-  ggsave("Figures/Antimicrobial_nongamma_nongranule_violin_BMblood.pdf", width = 8, height = 6)
-
-Idents(BMBlood_challenge) <- "orig.ident"
-eos_BM <- subset(BMBlood_challenge, idents = c("bonemarrow"))
-eos_BMCR <- subset(BMBlood_challenge, idents = c("bonemarrowCR"))
-eos_BL <- subset(BMBlood_challenge, idents = c("blood"))
-eos_BLCR <- subset(BMBlood_challenge, idents = c("bloodCR"))
-
-wilcox.test(eos_BMCR$Antimicrobial21, eos_BM$Antimicrobial21, alternative = "two.sided") #p-value < 2.2e-16
-wilcox.test(eos_BLCR$Antimicrobial21, eos_BL$Antimicrobial21, alternative = "two.sided") #p-value < 2.2e-16
-
-
-BMBlood_challenge <-AddModuleScore(BMBlood_challenge, features= IFNg_signature,name = "IFNg_signature")
-VlnPlot(BMBlood_challenge, features="IFNg_signature1", group.by = "orig.ident", cols= c("gray45", "khaki2", "gray86", "orange2"), pt.size = 0) +  theme_classic() + 
-  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
-  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+
-  labs(y = "IFNg signature", title = " ", x="") + theme(legend.position="right") +  
-  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
-  ggsave("Figures/IFNg_signature_violin_BMblood.pdf", width = 8, height = 6)
-
-#proliferation score
-BMBlood_challenge <- AddModuleScore(BMBlood_challenge, features = cc.genes, name = "CC")
-names(x = BMBlood_challenge[[]])
-RidgePlot(BMBlood_challenge, features="CC2", group.by = "orig.ident", cols= c("gray45", "khaki2", "gray86", "orange2")) +
-  theme_classic() +  
-  theme(text = element_text(size=25)) + labs (title = "Cell cycle score ", y = " ", x= " ") +theme(legend.position="none")+
-  ggsave("Figures/CC_ridgeBMBLOOD.pdf", width = 8, height = 6)
-
 
 #####CIRCULATING EOSINOPHILS DURING CHALLENGE#####
 DimPlot(refquery, group.by = "orig.ident")
