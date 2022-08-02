@@ -58,20 +58,20 @@ data_to_sparse_matrix <- function(data.st_file_path) {
 #volcano plot
 DEGs_volcano <- function(DEGs, p_treshold, FC_treshold, title, color, upperylim, xlim) {
   DEGs$Significant <- ifelse((DEGs$p_val_adj < p_treshold & abs(DEGs$avg_log2FC) > FC_treshold ), "Significant", "Not Sig")
-  DEGs$Gene <- ifelse((DEGs$p_val_adj < p_treshold & abs(DEGs$avg_log2FC) > FC_treshold ), rownames(DEGs), NA)
+  DEGs$Gene <- ifelse((DEGs$p_val_adj < p_treshold/2 & abs(DEGs$avg_log2FC) > FC_treshold ), rownames(DEGs), NA)
   
-  plot <-  ggplot(data=DEGs, aes(x=avg_log2FC, y=-log10(p_val_adj), fill=factor(Significant), label = DEGs$Gene) ) + 
+  plot <-  ggplot(data=DEGs, aes(x=avg_log2FC, y=-log10(p_val_adj), color=factor(Significant), label = DEGs$Gene) ) + 
     theme_bw()+ 
     theme( panel.grid.major.x = element_blank(),
-      panel.grid.minor.x = element_blank(),
-      panel.grid.major.y = element_blank(),
-      panel.grid.minor.y = element_blank())+
-    geom_point(shape = 21,color=color)+
-    scale_fill_manual(values = c(color, "black")) +
-    geom_text_repel(size=4, max.overlaps = Inf)+
+           panel.grid.minor.x = element_blank(),
+           panel.grid.major.y = element_blank(),
+           panel.grid.minor.y = element_blank())+
+    geom_point(shape = 20)+
+    scale_color_manual(values = c("grey", color)) +
+    geom_text_repel(size=3, max.overlaps = Inf, segment.size=0.3)+
     xlab("log2 fold change") + ylim(0,upperylim)+xlim(-xlim,xlim)+
     ylab("-log10 adjusted p-value") +  labs(title = title)+
-    theme(legend.position = "none", text = element_text(size=12),
+    theme(legend.position = "none", text = element_text(size=10),
           plot.title = element_text(size = rel(1.5), hjust = 0.5),
           axis.title = element_text(size = rel(1.25)))
   return(plot)
