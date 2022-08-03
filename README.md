@@ -5,9 +5,9 @@ This is a resource for the article: "Single-cell RNA sequencing unveils intestin
 1. Packages and functions for the scRNASeq analysis
 2. Preprocessing of scRNASeq data (after count matrix generation on the Igor SB Genomics Platform)
 3. Analysis of the steadystate scRNASeq datasets (Fig.1)
-4. Analysis of the H.pylori and C.Rodentium infection scRNASeq datasets
-5. Integration of DSS dataseta (Schwarzfischer et al, in revision) and plotting of bulk DSS data from https://pubmed.ncbi.nlm.nih.gov/31253778/
-6. Analysis of CRISPR-i screen, scRNASeq of colonic eosinophils upon in vivo INFg neutralization and bulk RNASeq of in vitro cytokine conditioning
+4. Analysis of the H.pylori and C.Rodentium infection scRNASeq datasets (Fig.2)
+5. Integration of DSS dataseta (Schwarzfischer et al, in revision) and plotting of bulk DSS data from https://pubmed.ncbi.nlm.nih.gov/31253778/ (Fig.2)
+6. Analysis of CRISPR-i screen, scRNASeq of colonic eosinophils upon in vivo INFg neutralization and bulk RNASeq of conditioned BM-eos (Fig.3 and 4)
 
 The preprint is available here: https://www.biorxiv.org/content/10.1101/2021.10.27.466053v1.full.
 
