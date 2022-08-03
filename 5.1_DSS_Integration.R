@@ -182,3 +182,38 @@ VlnPlot(active_DSS_bac, features="antimicrobial1", group.by = "orig.ident", cols
 
 
 
+####split colon and stomach challenges
+Idents(intestinal_DSS_challenge) <- "orig.ident"
+stomach_challenge <-  subset(intestinal_DSS_challenge, idents=c("stomach", "stomachHP"))
+DimPlot(stomach_challenge)
+VlnPlot(stomach_challenge, features="IFNg_signature1", group.by = "orig.ident", cols= c("grey", "red"), pt.size = 0) +  theme_classic() + 
+  theme(text = element_text(size=30, colour = "black")) + RotatedAxis() + 
+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+ 
+  labs(title = "", y = "IFNg score", x="") + theme(legend.position="right") +  
+  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
+  ggsave("IFNg_signature_violin_stomach.pdf", width = 5, height = 6)
+
+VlnPlot(stomach_challenge, features="Antigen_processing1", group.by = "orig.ident", cols= c("grey",  "red"), pt.size = 0) +  theme_classic() + 
+  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+ 
+  labs(y = "Antigen processing signature", title = "", x="") + theme(legend.position="right") +  
+  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
+  ggsave("Antigen_processing_violin_stomach.pdf", width = 5, height = 6)
+
+colon_challenge <- subset(intestinal_DSS_challenge, idents = c("colon", "colonCR", "DSS"))
+DimPlot(colon_challenge)
+VlnPlot(colon_challenge, features="IFNg_signature1", group.by = "orig.ident", cols= c("grey16", "darkred", "darkgreen"), pt.size = 0) +  theme_classic() + 
+  theme(text = element_text(size=30, colour = "black")) + RotatedAxis() + 
+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+ 
+  labs(title = "", y = "IFNg score", x="") + theme(legend.position="right") +  
+  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
+  ggsave("IFNg_signature_violin_colon.pdf", width = 6, height = 6)
+
+VlnPlot(colon_challenge, features="Antigen_processing1", group.by = "orig.ident", cols= c("grey16", "darkred", "darkgreen"), pt.size = 0) +  theme_classic() + 
+  theme(text = element_text(size=20, colour = "black")) + RotatedAxis() + 
+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(),axis.ticks.x=element_blank())+ 
+  labs(y = "Antigen processing signature", title = "", x="") + theme(legend.position="right") +  
+  stat_summary(fun.data = "mean_sdl",  fun.args = list(mult = 1),  geom = "pointrange", color = "black")+
+  ggsave("Antigen_processing_violin_colon.pdf", width = 6, height = 6)
+
+
