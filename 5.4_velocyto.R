@@ -1,5 +1,16 @@
 ####GENERATE LOOM FILES####
 
+#get cellIDs from eosinophil_pure Seurat object
+library(stringr)
+library(Seurat)
+load("~/NAS/Coco/Collaborations/Eosinophils BD/Data analysis/Final/Steadystate/eosinophil_pure.RData")
+Cells(eosinophil_pure)
+cellID <- str_split(Cells(eosinophil_pure), pattern = "_", simplify = T)[,2]
+cellID
+length(cellID)
+write.table(cellID, file= "/media/Coco/Collaborations/Eosinophils BD/Data analysis/CellRank/cellIDs_eospure.tsv", quote=F, col.names = F, row.names = F, sep = "\t")
+
+
 #merge multiple bams
 samtools merge merged.bam bam1.bam bam2.bam #merge multiple runs if needed
 
