@@ -33,3 +33,5 @@ samtools index steadystate.for_velocyto.bam --threads 50
 conda activate samtools
 velocyto run -b cellIDs_eospure.tsv -o . -m eospure_fast.bam.for_velocyto.bam gencode.vM25.basic.annotation.gtf --samtools-memory 2000 --samtools-threads 20
 
+
+###scvelo and CellRank ran in Python > see cellrank_challenge.ipynb and cellrank_steadystate.ipynb
