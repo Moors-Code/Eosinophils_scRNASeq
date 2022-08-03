@@ -11,21 +11,24 @@ library(dplyr)
 library(ggplot2)
 library(ggrepel)
 
-######ACTIVE######
+####MAGECK COUNT in terminal###
 mageck count -l GWIlibrary.csv -n GWI1_active_BMSC --sample-label "active,BMSC" --fastq F5_S5_R1_001.bam F3_S3_R1_001.bam --norm-method total
 mageck count -l GWIlibrary.csv -n GWI2_active_BMSC --sample-label "active,BMSC" --fastq F6_S6_R1_001.bam F4_S4_R1_001.bam --norm-method total
+
+#import in R
 GWI1_active_BMSC.count_normalized.txt <- read.delim("/media/Coco/Collaborations/Eosinophils BD/GWI screen/fastqs/bowtie_output/GWI1_active_BMSC.count_normalized.txt")
 GWI2_active_BMSC.count_normalized.txt <- read.delim("/media/Coco/Collaborations/Eosinophils BD/GWI screen/fastqs/bowtie_output/GWI2_active_BMSC.count_normalized.txt")
-
 head(GWI1_active_BMSC.count_normalized.txt)
-
 paired_counts <- merge(GWI1_active_BMSC.count_normalized.txt, GWI2_active_BMSC.count_normalized.txt, by="sgRNA")
 paired_counts <- paired_counts[,c(1,2,3,4,6,7)]
 colnames(paired_counts) <- c( "sgRNA" ,"Gene", "active1","BMSC1","active2","BMSC2")
 head(paired_counts)
 write.table(paired_counts, "fastqs/bowtie_output/paired_counts.txt",append = FALSE, sep= "\t",  row.names = FALSE, quote = FALSE, col.names = TRUE)
 
+###MAGECK TEST in terminal ###
 mageck test -k paired_counts.txt -t active1,active2 -c BMSC1,BMSC2 -n paired_active_BMSC --paired
+
+#import in R
 paired_active_BMSC.gene_summary <- read.delim("/media/Coco/Collaborations/Eosinophils BD/GWI screen/fastqs/bowtie_output/paired_active_BMSC.gene_summary.txt")
 View(paired_active_BMSC.gene_summary)
 ggplot(data=paired_active_BMSC.gene_summary, aes(x=neg.lfc, y=-log10(neg.p.value))) + 
