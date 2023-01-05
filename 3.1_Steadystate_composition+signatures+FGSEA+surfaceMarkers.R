@@ -54,7 +54,7 @@ eosinophils_steadystate <- RunUMAP(eosinophils_steadystate, dims = 1:20, return.
 DimPlot(eosinophils_steadystate, cols = col_vector, label = T)
 
 #rename clusters
-current.cluster.ids <- c(0, 1, 2, 3, 4,5,6)
+current.cluster.ids <- c(0, 1, 2, 3, 4,5)
 new.cluster.ids <-  c("basal eosinophils", "active eosinophils",  "circulating eosinophils", "basal eosinophils", "immature eosinophils",
                       "eosinophil progenitors")
 eosinophils_steadystate@meta.data$seurat_clusters <- plyr::mapvalues(x = eosinophils_steadystate@meta.data$seurat_clusters, from = current.cluster.ids, to = new.cluster.ids)
