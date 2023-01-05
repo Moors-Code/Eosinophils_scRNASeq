@@ -23,13 +23,40 @@ DimPlot(eosinophils_steadystate, cols = col_vector, label = T)
 FeaturePlot(eosinophils_steadystate, features = c("Mki67", "Camp", "Ltf", "Ly6a2", "Ly6g", "Epx",  "Siglece", "Retnlg", "Retnla", "Cd274"), order=T)
 FeaturePlot(eosinophils_steadystate, features = c("Icosl")
 
-#remove cluster mito high and differentiating neutrophils
-eosinophils_steadystate <- subset(eosinophils_steadystate,  idents = c(0,1,2,3)) #then run the analysis from line 6
+#remove cluster diff neu and re-process
+eosinophils_steadystate <- subset(eosinophils_steadystate,  idents = c(0,1,2,3,4,5))
+DimPlot(eosinophils_steadystate, cols = col_vector, label = T)
+eosinophils_steadystate <- NormalizeData(eosinophils_steadystate, normalization.method = "LogNormalize", scale.factor = 10000)
+eosinophils_steadystate <- FindVariableFeatures(eosinophils_steadystate, selection.method = "vst", nfeatures = 2000)
+all.genes <- rownames(eosinophils_steadystate)
+eosinophils_steadystate <- ScaleData(eosinophils_steadystate, features = all.genes, vars.to.regress = "percent.mt")
+eosinophils_steadystate <- RunPCA(eosinophils_steadystate, features = VariableFeatures(object = eosinophils_steadystate))
+DimPlot(eosinophils_steadystate, reduction = "pca", group.by = "orig.ident")
+ElbowPlot(eosinophils_steadystate)
+eosinophils_steadystate <- FindNeighbors(eosinophils_steadystate, dims = 1:20)
+eosinophils_steadystate <- FindClusters(eosinophils_steadystate, resolution = 0.3)
+eosinophils_steadystate <- RunUMAP(eosinophils_steadystate, dims = 1:20, return.model=TRUE)
+DimPlot(eosinophils_steadystate, cols = col_vector, label = T)
+
+#remove cluster mito high and re-process
+eosinophils_steadystate <- subset(eosinophils_steadystate,  idents = c(0,1,2,3,4,5)) 
+DimPlot(eosinophils_steadystate, cols = col_vector, label = T)
+eosinophils_steadystate <- NormalizeData(eosinophils_steadystate, normalization.method = "LogNormalize", scale.factor = 10000)
+eosinophils_steadystate <- FindVariableFeatures(eosinophils_steadystate, selection.method = "vst", nfeatures = 2000)
+all.genes <- rownames(eosinophils_steadystate)
+eosinophils_steadystate <- ScaleData(eosinophils_steadystate, features = all.genes, vars.to.regress = "percent.mt")
+eosinophils_steadystate <- RunPCA(eosinophils_steadystate, features = VariableFeatures(object = eosinophils_steadystate))
+DimPlot(eosinophils_steadystate, reduction = "pca", group.by = "orig.ident")
+ElbowPlot(eosinophils_steadystate)
+eosinophils_steadystate <- FindNeighbors(eosinophils_steadystate, dims = 1:20)
+eosinophils_steadystate <- FindClusters(eosinophils_steadystate, resolution = 0.3)
+eosinophils_steadystate <- RunUMAP(eosinophils_steadystate, dims = 1:20, return.model=TRUE)
+DimPlot(eosinophils_steadystate, cols = col_vector, label = T)
 
 #rename clusters
 current.cluster.ids <- c(0, 1, 2, 3, 4,5,6)
-new.cluster.ids <-  c("basal eosinophils", "active eosinophils",  "circulating eosinophils", "immature eosinophils", "basal eosinophils",
-                      "eosinophil progenitors", "basal eosinophils")
+new.cluster.ids <-  c("basal eosinophils", "active eosinophils",  "circulating eosinophils", "basal eosinophils", "immature eosinophils",
+                      "eosinophil progenitors")
 eosinophils_steadystate@meta.data$seurat_clusters <- plyr::mapvalues(x = eosinophils_steadystate@meta.data$seurat_clusters, from = current.cluster.ids, to = new.cluster.ids)
 Idents(eosinophils_steadystate) <- "seurat_clusters"
 eosinophils_steadystate$seurat_clusters <- factor(x = eosinophils_steadystate$seurat_clusters, levels = rev(c("active eosinophils","basal eosinophils", "circulating eosinophils","immature eosinophils",  "eosinophil progenitors")))
