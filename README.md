@@ -11,4 +11,4 @@ This is a resource for the article: "Active eosinophils regulate host defense an
 
 The publication can be accessed from here: https://www.nature.com/articles/s41586-022-05628-7
 
-The scRNAseq datasets are available here: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182001.
+The scRNAseq datasets are available here: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE18200 (fastqs) and here https://doi.org/10.5281/zenodo.10225349 (processed R objects).
